@@ -1,15 +1,19 @@
 #!/usr/bin/env php
 
 <?php
-$sgTasks = array(
+
+/*
+  TODO This needs to be refactored into a proper object, instead of this $GLOBALS crap
+*/
+$GLOBALS['SG_TASKS'] = array(
+  'help' => 'sgTaskHelp',
   'init-project' => 'sgTaskInitProject',
   'cc' => 'sgTaskClearCache',
-  'clear-cache' => 'sgTaskClearCache',
 );
 
-if (isset($sgTasks[$argv[1]]))
+if (isset($GLOBALS['SG_TASKS'][$argv[1]]))
 {
-  $sgTasks[$argv[1]]();
+  $GLOBALS['SG_TASKS'][$argv[1]]();
 }
 else
 {
@@ -18,6 +22,19 @@ else
 fputs(STDOUT, $string . "\r\n\r\n");
 
 
+function sgTaskHelp()
+{
+  $message = "Available commands:";
+  foreach ($GLOBALS['SG_TASKS'] as $name => $task) {
+    $message .= "\r\n  " . $name;
+  }
+  sgMessage($message);
+}
+
+function sgTaskClearCache()
+{
+  sgMessage('This is a stub task. For now, just wipe out your cache directory manually.');
+}
 
 function sgTaskInitProject()
 {
@@ -47,6 +64,7 @@ function sgTaskInitProject()
   copy($scriptDir . '/skeleton/config/config.php-dist', $targetDir . '/config/config.php');
   copy($scriptDir . '/skeleton/config/routing.php-dist', $targetDir . '/config/routing.php');
   symlink(realpath(__FILE__), $targetDir . '/superglue');
+  chmod(realpath(__FILE__), $targetDir . '/superglue', 0755);
   sgMessage('Finished initializing project.');
 }
 
