@@ -1,6 +1,6 @@
 <?php
 require(dirname(__FILE__) . '/sgContext.class.php');
-require(dirname(__FILE__) . '/vendor/Twig/Autoloader.php');
+require(dirname(__FILE__) . '/vendor/Twig/lib/Twig/Autoloader.php');
 
 class sgConfiguration
 {
