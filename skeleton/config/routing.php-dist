@@ -1,0 +1,9 @@
+<?php
+sgConfiguration::add('routing', array(
+  'index' => array(
+    'path' => '/',
+    'class' => 'sgBaseController',
+    'template' => 'index',
+    'title' => 'Home',
+  ),
+));

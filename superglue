@@ -1,0 +1,71 @@
+#!/usr/bin/env php
+
+<?php
+$sgTasks = array(
+  'init-project' => 'sgTaskInitProject',
+  'cc' => 'sgTaskClearCache',
+  'clear-cache' => 'sgTaskClearCache',
+);
+
+if (isset($sgTasks[$argv[1]]))
+{
+  $sgTasks[$argv[1]]();
+}
+else
+{
+  sgMessage('Command "' . $argv[1] . '" does not exist. Run "superglue help" to get a list of available commands.');
+}
+fputs(STDOUT, $string . "\r\n\r\n");
+
+
+
+function sgTaskInitProject()
+{
+  $targetDir = getcwd();
+  $scriptDir = realpath(dirname(__FILE__));
+  
+  sgConfirm('Are you sure you want to initialize a new project in "' . $targetDir .'"?');
+  
+  if (file_exists($targetDir . '/superglue')) {
+    sgMessage('A project already exists in this directory.');
+    return;
+  }
+  
+  sgMessage('Initializing project...');
+  mkdir($targetDir . '/config', 0755);
+  mkdir($targetDir . '/cache', 0777);
+  chmod($targetDir . '/cache', 0777);
+  mkdir($targetDir . '/cache/templates', 0777);
+  chmod($targetDir . '/cache/templates', 0777);
+  mkdir($targetDir . '/models', 0755);
+  mkdir($targetDir . '/controllers', 0755);
+  mkdir($targetDir . '/views', 0755);
+  mkdir($targetDir . '/web', 0755);
+  copy($scriptDir . '/skeleton/web/htaccess-dist', $targetDir . '/web/.htaccess');
+  copy($scriptDir . '/skeleton/web/index.php-dist', $targetDir . '/web/index.php');
+  copy($scriptDir . '/skeleton/config/ProjectConfiguration.class.php-dist', $targetDir . '/config/ProjectConfiguration.class.php');
+  copy($scriptDir . '/skeleton/config/config.php-dist', $targetDir . '/config/config.php');
+  copy($scriptDir . '/skeleton/config/routing.php-dist', $targetDir . '/config/routing.php');
+  symlink(realpath(__FILE__), $targetDir . '/superglue');
+  sgMessage('Finished initializing project.');
+}
+
+/*
+  TODO add ANSI color support
+*/
+function sgMessage($string)
+{
+  fputs(STDOUT, $string . "\r\n");
+}
+
+function sgConfirm($string)
+{
+  sgMessage($string . ' (y/N)');
+  $confirm = fgets(STDIN);
+  fputs(STDOUT, "\r\n");
+  if (trim($confirm) == 'y') {
+    return true;
+  }
+  fputs(STDOUT, 'Cancelled.' . "\r\n\r\n");
+  exit(0);
+}
