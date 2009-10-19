@@ -55,7 +55,7 @@ class sgContext
   
   public static function isAjaxRequest()
   {
-    if ($_SERVER['HTTP_X_REQUESTED_WITH']) {
+    if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
       if ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
         return true;
       }

@@ -42,7 +42,7 @@ class sgBaseController
       array_shift($titlevars);
       $this->title = ucwords(vsprintf($route['dynamic_title'], $titlevars));
     }
-    else {
+    else if (isset($route['name'])) {
       $this->title = ucwords(str_replace('_', ' ', $route['name']));
     }
     
