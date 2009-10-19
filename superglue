@@ -19,7 +19,7 @@ else
 {
   sgMessage('Command "' . $argv[1] . '" does not exist. Run "superglue help" to get a list of available commands.');
 }
-fputs(STDOUT, $string . "\r\n\r\n");
+fputs(STDOUT, "\r\n\r\n");
 
 
 function sgTaskHelp()
@@ -64,7 +64,7 @@ function sgTaskInitProject()
   copy($scriptDir . '/skeleton/config/config.php-dist', $targetDir . '/config/config.php');
   copy($scriptDir . '/skeleton/config/routing.php-dist', $targetDir . '/config/routing.php');
   symlink(realpath(__FILE__), $targetDir . '/superglue');
-  chmod(realpath(__FILE__), $targetDir . '/superglue', 0755);
+  chmod($targetDir . '/superglue', 0755);
   sgMessage('Finished initializing project.');
 }
 
