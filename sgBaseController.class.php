@@ -44,6 +44,7 @@ class sgBaseController
   
   public function guessTitle()
   {
+    $title = '';
     if (isset($this->matchedRoute['title'])) {
       $title = $this->matchedRoute['title'];
     }
