@@ -25,7 +25,11 @@ class sgContext
   
   public static function getCurrentPath()
   {
-    return '/' . $_GET['q'];
+    if (isset($_GET['q'])) {
+      return '/' . $_GET['q'];
+    }
+    
+    return '/';
   }
   
   public static function getRelativeBaseUrl()
