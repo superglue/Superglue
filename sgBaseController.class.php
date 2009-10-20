@@ -13,7 +13,7 @@ class sgBaseController
   function __construct($matches = array())
   {
     $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
-    $this->twig = new Twig_Environment($loader);
+    $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
     $this->matches = $matches;
     $this->matchedRoute = sgContext::getCurrentRoute();
     $this->base = sgContext::getRelativeBaseUrl();
@@ -72,7 +72,7 @@ class sgBaseController
     catch(Exception $e) {
       if (strpos($e->getMessage(), 'Unable to find template') === 0) {
         $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
-        $this->twig = new Twig_Environment($loader);
+        $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
         $view = $this->twig->loadTemplate('404.html');
       }
       else {
@@ -91,7 +91,7 @@ class sgBaseController
     header("HTTP/1.0 500 Internal Server Error");
     if (sgConfiguration::get('settings', 'debug')) {
       $loader = new Twig_Loader_String();
-      $this->twig = new Twig_Environment($loader);
+      $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
       $view = $this->twig->loadTemplate('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
       print $view->render();
       exit();
@@ -102,7 +102,7 @@ class sgBaseController
     catch(Exception $thisError) {
       if (strpos($thisError->getMessage(), 'Unable to find template') === 0) {
         $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
-        $this->twig = new Twig_Environment($loader);
+        $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
         $view = $this->twig->loadTemplate('500.html');
       }
       else {
@@ -136,4 +136,4 @@ class sgBaseController
     
     print $view->render($this->getTemplateVars());
   }
-}
+} 
