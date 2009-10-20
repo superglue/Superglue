@@ -31,9 +31,24 @@ function sgTaskHelp()
   sgMessage($message);
 }
 
+/*
+  TODO make this more generic
+*/
 function sgTaskClearCache()
 {
-  sgMessage('This is a stub task. For now, just wipe out your cache directory manually.');
+  _removeCacheFiles(getcwd() . '/cache');
+  _removeCacheFiles(getcwd() . '/cache/templates');
+}
+
+function _removeCacheFiles($path) {
+  $files = scandir($path);
+  foreach ($files as $filename) {
+    $file = realpath($path . '/' . $filename);
+    if (pathinfo($file, PATHINFO_EXTENSION) == 'cache') {
+      sgMessage('Removing: ' . $file);
+      unlink($file);
+    }
+  }
 }
 
 function sgTaskInitProject()
