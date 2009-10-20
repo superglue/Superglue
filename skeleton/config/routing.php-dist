@@ -1,5 +1,5 @@
 <?php
-sgConfiguration::add('routing', array(
+sgConfiguration::createConfig('routing', array(
   'index' => array(
     'path' => '/',
     'class' => 'sgBaseController',
