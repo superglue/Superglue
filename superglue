@@ -11,7 +11,10 @@ $GLOBALS['SG_TASKS'] = array(
   'cc' => 'sgTaskClearCache',
 );
 
-if (isset($GLOBALS['SG_TASKS'][$argv[1]]))
+if (!isset($argv[1])) {
+  sgTaskHelp();
+}
+else if (isset($GLOBALS['SG_TASKS'][$argv[1]]))
 {
   $GLOBALS['SG_TASKS'][$argv[1]]();
 }
@@ -19,7 +22,7 @@ else
 {
   sgMessage('Command "' . $argv[1] . '" does not exist. Run "superglue help" to get a list of available commands.');
 }
-fputs(STDOUT, "\r\n\r\n");
+fputs(STDOUT, "\r\n");
 
 
 function sgTaskHelp()
@@ -38,6 +41,7 @@ function sgTaskClearCache()
 {
   _removeCacheFiles(getcwd() . '/cache');
   _removeCacheFiles(getcwd() . '/cache/templates');
+  sgMessage('Cache cleared');
 }
 
 function _removeCacheFiles($path) {
