@@ -12,7 +12,7 @@ class sgBaseController
   
   function __construct($matches = array())
   {
-    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates');
+    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
     $this->twig = new Twig_Environment($loader);
     $this->matches = $matches;
     $this->matchedRoute = sgContext::getCurrentRoute();
@@ -31,6 +31,7 @@ class sgBaseController
       TODO see if taking out the twig var significantly speeds rendering up (I'm sure it does)
     */
     $templateVars = get_object_vars($this);
+    unset($templateVars['twig']);
     $templateVars['context'] = sgContext::getInstance();
     $templateVars['request'] = array(
       'uri' => $_SERVER['REQUEST_URI'],
@@ -69,7 +70,7 @@ class sgBaseController
     }
     catch(Exception $e) {
       if (strpos($e->getMessage(), 'Unable to find template') === 0) {
-        $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir'));
+        $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
         $this->twig = new Twig_Environment($loader);
         $view = $this->twig->loadTemplate('404.html');
       }
@@ -90,7 +91,7 @@ class sgBaseController
     if (sgConfiguration::get('settings', 'debug')) {
       $loader = new Twig_Loader_String();
       $this->twig = new Twig_Environment($loader);
-      $view = $this->twig->loadTemplate($error->getMessage() . '<br />' . nl2br($error->getTraceAsString()));
+      $view = $this->twig->loadTemplate('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
       print $view->render();
       exit();
     }
@@ -99,7 +100,7 @@ class sgBaseController
     }
     catch(Exception $thisError) {
       if (strpos($thisError->getMessage(), 'Unable to find template') === 0) {
-        $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir'));
+        $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
         $this->twig = new Twig_Environment($loader);
         $view = $this->twig->loadTemplate('500.html');
       }
