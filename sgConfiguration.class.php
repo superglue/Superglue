@@ -12,7 +12,7 @@ class sgConfiguration
     sgContext::getInstance()->setRootDir(self::getRootDir());
     require_once(sgContext::getInstance()->getRootDir() . '/config/config.php');
     require_once(sgContext::getInstance()->getRootDir() . '/config/routing.php');
-    self::add('settings', array('cache_dir' => sgConfiguration::getRootDir() . '/cache'));
+    self::set('settings', 'cache_dir', sgConfiguration::getRootDir() . '/cache');
     self::_initAutoloader();
     
     return;
@@ -51,9 +51,15 @@ class sgConfiguration
     return self::$instance;
   }
   
-  public static function add($configType, $settings)
+  // this is used for adding a new config type with settings
+  public static function createConfig($configType, $settings = null)
   {
     self::$config[$configType] = $settings;
+  }
+  
+  public static function set($configType, $setting, $value)
+  {
+    self::$config[$configType][$setting] = $value;
   }
   
   public static function get($configType, $setting = NULL)

@@ -1,4 +1,5 @@
 <?php
 sgConfiguration::add('settings', array(
   'site_name' => 'New Superglue Project',
+  'debug' => true,
 ));
