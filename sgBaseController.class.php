@@ -22,14 +22,11 @@ class sgBaseController
   
   public function GET()
   {
-    return $this->render();
+    return $this->render(array());
   }
   
   public function getTemplateVars()
   {
-    /*
-      TODO see if taking out the twig var significantly speeds rendering up (I'm sure it does)
-    */
     $templateVars = get_object_vars($this);
     unset($templateVars['twig']);
     $templateVars['context'] = sgContext::getInstance();
@@ -86,14 +83,16 @@ class sgBaseController
   public function throwError($error)
   {
     if (strpos($error->getMessage(), 'Unable to find template') === 0) {
-      $this->throw404Error();
+      if (!sgConfiguration::get('settings', 'debug')) {
+        $this->throw404Error();
+      }
     }
     header("HTTP/1.0 500 Internal Server Error");
     if (sgConfiguration::get('settings', 'debug')) {
       $loader = new Twig_Loader_String();
       $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
       $view = $this->twig->loadTemplate('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
-      print $view->render();
+      print $view->render(array());
       exit();
     }
     try {
@@ -123,10 +122,10 @@ class sgBaseController
       if ($template) {
         $view = $this->twig->loadTemplate($template . '.html');
       }
-      else if (isset($route['template'])) {
+      else if (isset($this->matchedRoute['template'])) {
         $view = $this->twig->loadTemplate($this->matchedRoute['template'] . '.html');
       }
-      else if (sgConfiguration::getRootDir() . '/views/'){
+      else {
         $view = $this->twig->loadTemplate($this->matchedRoute['name'] . '.html');
       }
     }
