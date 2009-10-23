@@ -48,7 +48,8 @@ function _removeCacheFiles($path) {
   $files = scandir($path);
   foreach ($files as $filename) {
     $file = realpath($path . '/' . $filename);
-    if (pathinfo($file, PATHINFO_EXTENSION) == 'cache') {
+    $extension = pathinfo($file, PATHINFO_EXTENSION);
+    if ($extension == 'cache' || $extension == 'php') {
       sgMessage('Removing: ' . $file);
       unlink($file);
     }

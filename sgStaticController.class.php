@@ -2,7 +2,7 @@
 class sgStaticController extends sgBaseController {
   public function GET() {
     $paths = explode('/', sgContext::getCurrentPath());
-    $this->title = ucwords(end($paths));
+    $this->title = ucwords(str_replace(array('_', '-'), ' ', end($paths)));
     return $this->render(substr(sgContext::getCurrentPath(), 1));
   }
 }

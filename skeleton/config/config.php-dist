@@ -2,4 +2,5 @@
 sgConfiguration::createConfig('settings', array(
   'site_name' => 'New Superglue Project',
   'debug' => true,
+  'cache_templates' => false,
 ));

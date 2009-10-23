@@ -10,9 +10,10 @@ class sgBaseController
   public $matches;
   public $base;
   
+  
   function __construct($matches = array())
   {
-    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
+    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
     $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
     $this->matches = $matches;
     $this->matchedRoute = sgContext::getCurrentRoute();
@@ -39,6 +40,9 @@ class sgBaseController
     return $templateVars;
   }
   
+  /*
+    TODO figure out better way to handle titles
+  */
   public function guessTitle()
   {
     $title = '';
@@ -51,7 +55,7 @@ class sgBaseController
       $title = ucwords(vsprintf($this->matchedRoute['dynamic_title'], $titlevars));
     }
     else if (isset($route['name'])) {
-      $title = ucwords(str_replace('_', ' ', $this->matchedRoute['name']));
+      $title = ucwords(str_replace(array('_', '-'), ' ', $this->matchedRoute['name']));
     }
     
     return $title;
@@ -70,7 +74,7 @@ class sgBaseController
       if (strpos($e->getMessage(), 'Unable to find template') === 0) {
         $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
         $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
-        $view = $this->twig->loadTemplate('404.html');
+        $view = $this->loadTemplate('404');
       }
       else {
         $this->throwError($e);
@@ -102,7 +106,7 @@ class sgBaseController
       if (strpos($thisError->getMessage(), 'Unable to find template') === 0) {
         $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
         $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
-        $view = $this->twig->loadTemplate('500.html');
+        $view = $this->loadTemplate('500');
       }
       else {
         sgConfiguration::set('settings', 'debug', true);
@@ -120,19 +124,32 @@ class sgBaseController
   {
     try {
       if ($template) {
-        $view = $this->twig->loadTemplate($template . '.html');
+        $view = $this->loadTemplate($template);
       }
       else if (isset($this->matchedRoute['template'])) {
-        $view = $this->twig->loadTemplate($this->matchedRoute['template'] . '.html');
+        $view = $this->loadTemplate($this->matchedRoute['template']);
       }
       else {
-        $view = $this->twig->loadTemplate($this->matchedRoute['name'] . '.html');
+        $view = $this->loadTemplate($this->matchedRoute['name']);
       }
     }
+    /*
+      FIXME recent changes in twig make it impossible to catch errors and throw a 500 error when debug is turned off
+    */
     catch(Exception $e) {
       $this->throwError($e);
     }
     
     print $view->render($this->getTemplateVars());
+    exit();
+  }
+  
+  public function loadTemplate($name)
+  {
+    //set view so that exception can be thrown without setting template_name
+    $view = $this->twig->loadTemplate($name . '.html');
+    $this->template_name = $name;
+    
+    return $view;
   }
 } 
