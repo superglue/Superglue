@@ -148,8 +148,8 @@ class sgBaseController
   {
     //set view so that exception can be thrown without setting template_name
     $view = $this->twig->loadTemplate($name . '.html');
-    $this->template_name = $name;
     $this->template_structure = explode('/', $name);
+    $this->template_name = end($this->template_structure);
     
     return $view;
   }
