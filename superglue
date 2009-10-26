@@ -12,10 +12,7 @@ $GLOBALS['SG_TASKS'] = array(
   'cc' => 'sgTaskClearCache',
   'fix-perms' => 'sgTaskFixPermissions',
 );
-print '<pre>';
-print_r($argv[1]);
-print '</pre>';
-exit;
+
 chdir(dirname($_SERVER['PHP_SELF']));
 if (sgIsProjectDir() || $argv[1] == 'init-project') {
   if (!isset($argv[1])) {
@@ -69,11 +66,6 @@ function sgTaskInitProject()
 {
   $targetDir = realpath($_SERVER['PWD']);
   $scriptDir = realpath(dirname(__FILE__));
-  
-  print '<pre>';
-  print_r(rel_path(realpath(__FILE__), $targetDir));
-  print '</pre>';
-  exit;
   
   if (file_exists($targetDir . '/superglue')) {
     sgMessage('A project already exists in this directory.');
