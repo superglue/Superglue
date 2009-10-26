@@ -142,18 +142,20 @@ function rel_path($dest, $root = '', $dir_sep = '/')
 }
 
 // based on recursive scandir() by webmaster at asylum-et dot com (http://www.php.net/manual/en/function.scandir.php#84638)
-function rscandir($base='', &$data=array()) {
+function rscandir($base='', $includeHidden = false, &$data=array()) {
   if (substr($base, -1) !== '/') {
     $base .= '/';
   }
   $array = array_diff(scandir($base), array('.', '..'));
   foreach($array as $value) {
-    if (!is_link($base.$value) && is_dir($base.$value)) {
-      $data[] = $base.$value.'/';
-      $data = rscandir($base.$value.'/', $data);
-    }
-    elseif (is_file($base.$value)) {
-      $data[] = $base.$value;
+    if (!is_link($base.$value) && ($includeHidden || strpos(pathinfo($base.$value, PATHINFO_BASENAME), '.') !== 0)) {
+      if (is_dir($base.$value)) {
+        $data[] = $base.$value.'/';
+        $data = rscandir($base.$value.'/', $includeHidden, $data);
+      }
+      elseif (is_file($base.$value)) {
+        $data[] = $base.$value;
+      }
     }
   }
   
