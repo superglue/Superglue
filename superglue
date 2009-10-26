@@ -12,9 +12,12 @@ $GLOBALS['SG_TASKS'] = array(
   'cc' => 'sgTaskClearCache',
   'fix-perms' => 'sgTaskFixPermissions',
 );
-
+print '<pre>';
+print_r($argv[1]);
+print '</pre>';
+exit;
 chdir(dirname($_SERVER['PHP_SELF']));
-if (sgIsProjectDir()) {
+if (sgIsProjectDir() || $argv[1] == 'init-project') {
   if (!isset($argv[1])) {
     sgTaskHelp();
   }
@@ -64,15 +67,20 @@ function sgTaskClearCache()
 
 function sgTaskInitProject()
 {
-  $targetDir = getcwd();
+  $targetDir = realpath($_SERVER['PWD']);
   $scriptDir = realpath(dirname(__FILE__));
   
-  sgConfirm('Are you sure you want to initialize a new project in "' . $targetDir .'"?');
+  print '<pre>';
+  print_r(rel_path(realpath(__FILE__), $targetDir));
+  print '</pre>';
+  exit;
   
   if (file_exists($targetDir . '/superglue')) {
     sgMessage('A project already exists in this directory.');
     return;
   }
+  
+  sgConfirm('Are you sure you want to initialize a new project in "' . $targetDir .'"?');
   
   sgMessage('Initializing project...');
   mkdir($targetDir . '/config', 0755);
@@ -89,9 +97,55 @@ function sgTaskInitProject()
   copy($scriptDir . '/skeleton/config/ProjectConfiguration.class.php-dist', $targetDir . '/config/ProjectConfiguration.class.php');
   copy($scriptDir . '/skeleton/config/config.php-dist', $targetDir . '/config/config.php');
   copy($scriptDir . '/skeleton/config/routing.php-dist', $targetDir . '/config/routing.php');
-  symlink(realpath(__FILE__), $targetDir . '/superglue');
+  symlink(rel_path(realpath(__FILE__), $targetDir), $targetDir . '/superglue');
   chmod($targetDir . '/superglue', 0755);
   sgMessage('Finished initializing project.');
+}
+
+// relative path function by Santosh Patnaik (http://www.php.net/manual/en/function.realpath.php#77203)
+function rel_path($dest, $root = '', $dir_sep = '/')
+{
+ $root = explode($dir_sep, $root);
+ $dest = explode($dir_sep, $dest);
+ $path = '.';
+ $fix = '';
+ $diff = 0;
+ for($i = -1; ++$i < max(($rC = count($root)), ($dC = count($dest)));)
+ {
+  if(isset($root[$i]) and isset($dest[$i]))
+  {
+   if($diff)
+   {
+    $path .= $dir_sep. '..';
+    $fix .= $dir_sep. $dest[$i];
+    continue;
+   }
+   if($root[$i] != $dest[$i])
+   {
+    $diff = 1;
+    $path .= $dir_sep. '..';
+    $fix .= $dir_sep. $dest[$i];
+    continue;
+   }
+  }
+  elseif(!isset($root[$i]) and isset($dest[$i]))
+  {
+   for($j = $i-1; ++$j < $dC;)
+   {
+    $fix .= $dir_sep. $dest[$j];
+   }
+   break;
+  }
+  elseif(isset($root[$i]) and !isset($dest[$i]))
+  {
+   for($j = $i-1; ++$j < $rC;)
+   {
+    $fix = $dir_sep. '..'. $fix;
+   }
+   break;
+  }
+ }
+  return $path. $fix;
 }
 
 // based on recursive scandir() by webmaster at asylum-et dot com (http://www.php.net/manual/en/function.scandir.php#84638)
