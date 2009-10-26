@@ -44,6 +44,7 @@ function sgTaskHelp()
 
 function sgTaskFixPermissions()
 {
+  chmod(getcwd() . '/cache', 0777);
   $files = rscandir(getcwd() . '/cache/');
   foreach ($files as $file) {
     sgMessage('chmod 777 ' . $file);
