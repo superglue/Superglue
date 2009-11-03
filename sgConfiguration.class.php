@@ -38,6 +38,7 @@ class sgConfiguration
       sgContext::getRootDir() . '/controllers/',
       sgContext::getRootDir() . '/models/',
     ));
+    sgAutoloader::excludeFolderNamesMatchingRegex('/^Twig$|^CVS|\..*$/');
     sgAutoloader::setCacheFilePath(self::get('settings', 'cache_dir') . '/sgAutoloadCache.cache');
     Twig_Autoloader::register();
   }
