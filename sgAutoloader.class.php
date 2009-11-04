@@ -1,7 +1,7 @@
 <?php
 require(dirname(__FILE__) . '/sgFilteredDirectoryIterator.class.php');
 
-class sgNewAutoloader
+class sgAutoloader
 {
   private static $_cache = array();
   private static $instance;
