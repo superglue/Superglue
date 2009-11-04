@@ -31,7 +31,7 @@ class sgConfiguration
 
   private static function _initAutoloader()
   {
-    sgNewAutoloader::loadPaths(array(
+    sgAutoloader::loadPaths(array(
       dirname(__FILE__) . '/../',
       sgContext::getRootDir() . '/config/',
       sgContext::getRootDir() . '/lib/',
