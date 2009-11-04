@@ -28,18 +28,16 @@ class sgConfiguration
     $r = new ReflectionClass('ProjectConfiguration');
     return realpath(dirname($r->getFileName()) . '/..');
   }
-  
+
   private static function _initAutoloader()
   {
-    sgAutoloader::setClassPaths(array(
+    sgNewAutoloader::loadPaths(array(
       dirname(__FILE__) . '/../',
       sgContext::getRootDir() . '/config/',
       sgContext::getRootDir() . '/lib/',
       sgContext::getRootDir() . '/controllers/',
       sgContext::getRootDir() . '/models/',
     ));
-    sgAutoloader::excludeFolderNamesMatchingRegex('/^Twig$|^CVS|\..*$/');
-    sgAutoloader::setCacheFilePath(self::get('settings', 'cache_dir') . '/sgAutoloadCache.cache');
     Twig_Autoloader::register();
   }
   
