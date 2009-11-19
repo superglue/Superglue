@@ -3,11 +3,13 @@ class sgFilteredDirectoryIterator extends RecursiveFilterIterator
 {
   private $_exclusions;
   /*
-    TODO this should be passed in via the constructor
+    TODO make array of extensions
   */
-  private $_extension = 'php.ssalc.'; //reversed
-  function __construct($path, array $_exclusions = array())
+  private $_extension;
+  
+  function __construct($path, $extension, array $_exclusions = array())
   {
+    $this->_extension = strrev($extension);
     $this->_exclusions = $_exclusions;
     parent::__construct(new RecursiveDirectoryIterator($path));
   }
@@ -15,7 +17,7 @@ class sgFilteredDirectoryIterator extends RecursiveFilterIterator
   function accept()
   {
     $filename = $this->getInnerIterator()->getFilename();
-    if (($this->getInnerIterator()->isDir() && !in_array($filename, $this->_exclusions)) || ($this->getInnerIterator()->isFile() && stripos(strrev($filename), 'php.ssalc.') === 0 && !in_array($filename, $this->_exclusions))) {
+    if (($this->getInnerIterator()->isDir() && !in_array($filename, $this->_exclusions)) || ($this->getInnerIterator()->isFile() && stripos(strrev($filename), $this->_extension) === 0 && !in_array($filename, $this->_exclusions))) {
       return true;
     }
     
@@ -25,6 +27,6 @@ class sgFilteredDirectoryIterator extends RecursiveFilterIterator
   function getChildren()
   {
     $class = __CLASS__;
-    return new $class($this->key(), $this->_exclusions);
+    return new $class($this->key(), strrev($this->_extension), $this->_exclusions);
   }
 }

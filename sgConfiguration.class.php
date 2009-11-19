@@ -15,8 +15,12 @@ class sgConfiguration
     self::set('settings', 'cache_dir', sgConfiguration::getRootDir() . '/cache');
     self::_initAutoloader();
     
+    $this->init();
+    
     return;
   }
+  
+  public function init() {}
   
   public function execute()
   {
@@ -43,9 +47,13 @@ class sgConfiguration
   
   public static function getInstance()
   {
-    if (!isset(self::$instance)) {
-        $c = __CLASS__;
-        self::$instance = new $c;
+    if (!isset(self::$instance))
+    {
+      //$c = __CLASS__;
+      /*
+        TODO figure out a better way to do this (LSB in 5.3 maybe)
+      */
+      self::$instance = new ProjectConfiguration();
     }
     return self::$instance;
   }

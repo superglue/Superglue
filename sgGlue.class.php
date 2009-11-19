@@ -29,7 +29,7 @@
  *
  */
 class sgGlue {
-
+  static protected $cachedRoutes = null;
   /**
    * stick
    *
@@ -41,42 +41,92 @@ class sgGlue {
    * @throws  BadMethodCallException  Thrown if a corresponding GET,POST is not found
    *
    */
-  static function stick ($routes) {
+  static public function checkRouteCache($path, $method)
+  {
+    if ($routes = self::getCachedRoutes() && isset($routes["$method $path"]))
+    {
+      self::dispatch($routes["$method $path"], $routes["$method $path"]['matches']);
+    }
+    
+    return false;
+  }
+  
+  static public function getCachedRoutes()
+  {
+    if (!is_null(self::$cachedRoutes)) {
+      return self::$cachedRoutes;
+    }
+    $cacheFile = sgConfiguration::get('settings', 'cache_dir') . '/sgRouteCache.cache';
+    if (is_file($cacheFile) && $contents = file_get_contents($cacheFile)) {
+      self::$cachedRoutes = unserialize($contents);
+      return $cachedRoutes;
+    }
+    
+    return false;
+  }
+  
+  static public function dispatch($route, $method, $matches)
+  {
+    sgContext::setCurrentRoute($route);
+    if (isset($route['class'])) {
+      if (class_exists($route['class'])) {
+        $obj = new $route['class']($matches);
+        if (method_exists($obj, $method)) {
+          $obj->$method();
+        } else {
+          throw new BadMethodCallException("Method, $method, not supported.");
+        }
+      } else {
+        throw new Exception("Class, $class, not found.");
+      }
+    }
+    else {
+      $obj = new sgBaseController($matches);
+      $obj->$method();
+    }
+  }
+  
+  static public function saveCachedRoutes()
+  {
+    
+    // self::$cacheRoutes['']
+    // print '<pre>';
+    // print_r('sdf');
+    // print '</pre>';
+    // exit;
+    $data = serialize(self::$cachedRoutes);
+    file_put_contents(sgConfiguration::get('settings', 'cache_dir') . '/sgRouteCache.cache', $data);
+  }
+  
+  static function stick($routes)
+  {
     $method = strtoupper($_SERVER['REQUEST_METHOD']);
     $path = sgContext::getCurrentPath();
     $found = false;
-
+    //self::checkRouteCache($path, $method);
     foreach ($routes as $name => $route) {
       $regex = str_replace('/', '\/', $route['path']);
       $regex = '^' . $regex . '\/?$';
       if (preg_match("/$regex/i", $path, $matches)) {
         $found = true;
         $route['name'] = $name;
-        sgContext::setCurrentRoute($route);
-        if (isset($route['class'])) {
-          if (class_exists($route['class'])) {
-            $obj = new $route['class']($matches);
-            if (method_exists($obj, $method)) {
-              $obj->$method();
-            } else {
-              throw new BadMethodCallException("Method, $method, not supported.");
-            }
-          } else {
-            throw new Exception("Class, $class, not found.");
-          }
-        }
-        else {
-          $obj = new sgBaseController($matches);
-          $obj->$method();
-        }
+        $route['matches'] = $matches;
+        self::$cachedRoutes["$method $path"] = $route;
+        //self::saveCachedRoutes();
+        self::dispatch($route, $method, $matches);
         break;
       }
     }
     if (!$found) {
-      sgContext::setCurrentRoute(false);
+      $route = array(
+        'class' => 'sgStaticController',
+        'method' => $method,
+      );
+      sgContext::setCurrentRoute($route);
       $obj = new sgStaticController();
       $obj->$method();
-      //throw new Exception("URL, $path, not found.");
     }
+    
+    //self::saveCachedRoutes();
   }
 }

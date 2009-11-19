@@ -13,12 +13,25 @@ class sgBaseController
   
   function __construct($matches = array())
   {
-    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
-    $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
+    $this->initTwig();
     $this->matches = $matches;
     $this->matchedRoute = sgContext::getCurrentRoute();
     $this->base = sgContext::getRelativeBaseUrl();
     $this->title = $this->guessTitle();
+  }
+
+  public function initTwig()
+  {
+    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
+    $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
+    
+    foreach (sgAutoloader::getPaths() as $class => $path)
+    {
+      if (strpos($class, 'Twig_Extension') !== false)
+      {
+        $this->twig->addExtension(new $class());
+      }
+    }
   }
   
   public function GET()
@@ -69,6 +82,10 @@ class sgBaseController
     header("HTTP/1.0 404 Not Found");
     try {
       $view = $this->twig->loadTemplate('404.html');
+      print '<pre>';
+      print_r($view);
+      print '</pre>';
+      exit;
     }
     catch(Exception $e) {
       if (strpos($e->getMessage(), 'Unable to find template') === 0) {

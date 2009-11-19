@@ -26,22 +26,27 @@ class sgAutoloader
     }
   }
   
-  public static function loadPaths(array $paths, $clearCache = false)
+  public static function loadPaths(array $paths, $extension = '.class.php', $clearCache = false)
   {
     if ($clearCache)
     {
       self::$_cache = array();
     }
     
-    self::$_paths = $paths;
+    //self::$_paths = $paths;
     foreach ($paths as $path)
     {
-      $files = new RecursiveIteratorIterator(new sgFilteredDirectoryIterator($path, self:: $_exclusions));
+      $files = new RecursiveIteratorIterator(new sgFilteredDirectoryIterator($path, $extension, self:: $_exclusions));
       foreach ($files as $file)
       {
-        self::$_cache[$file->getBaseName('.class.php')] = $file->getPathname();
+        self::$_cache[$file->getBaseName($extension)] = $file->getPathname();
       }
     }
+  }
+  
+  public static function getPaths()
+  {
+    return self::$_cache;
   }
   
   public static function getInstance()
