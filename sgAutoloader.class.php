@@ -44,6 +44,11 @@ class sgAutoloader
     }
   }
   
+  public static function getPaths()
+  {
+    return self::$_cache;
+  }
+  
   public static function getInstance()
   {
     if (!isset(self::$instance)) {

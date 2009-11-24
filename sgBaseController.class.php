@@ -13,12 +13,30 @@ class sgBaseController
   
   function __construct($matches = array())
   {
-    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
-    $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
+    $this->initTwig();
     $this->matches = $matches;
     $this->matchedRoute = sgContext::getCurrentRoute();
     $this->base = sgContext::getRelativeBaseUrl();
     $this->title = $this->guessTitle();
+  }
+
+  public function initTwig()
+  {
+    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
+    $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
+    
+    $paths = sgAutoloader::getPaths();
+    foreach ($paths as $class => $path)
+    {
+      if (strpos($class, 'Twig_Extension_') === 0)
+      {
+        $this->twig->addExtension(new $class());
+      }
+    }
+    print '<pre>';
+    print_r($this->twig->getFilters());
+    print '</pre>';
+
   }
   
   public function GET()
