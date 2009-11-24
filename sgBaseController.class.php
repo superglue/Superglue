@@ -27,7 +27,7 @@ class sgBaseController
     
     foreach (sgAutoloader::getPaths() as $class => $path)
     {
-      if (strpos($class, 'Twig_Extension') !== false)
+      if (strpos($class, 'Twig_Extension') === 0)
       {
         $this->twig->addExtension(new $class());
       }
