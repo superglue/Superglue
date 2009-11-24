@@ -33,10 +33,6 @@ class sgBaseController
         $this->twig->addExtension(new $class());
       }
     }
-    print '<pre>';
-    print_r($this->twig->getFilters());
-    print '</pre>';
-
   }
   
   public function GET()
