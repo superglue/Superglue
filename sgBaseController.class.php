@@ -49,6 +49,7 @@ class sgBaseController
       'uri' => $_SERVER['REQUEST_URI'],
       'method' => $_SERVER['REQUEST_METHOD'],
       'ajax' => sgContext::isAjaxRequest(),
+      'vars' => array('GET' => $_GET, 'POST' => $_POST),
     );
     
     return $templateVars;
