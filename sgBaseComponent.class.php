@@ -2,6 +2,7 @@
 
 /**
 * Base Component - all other components should extend this class
+* format: {% component 'class|method' with ['array', 'of', 'args'] %}
 */
 class sgBaseComponent
 {
