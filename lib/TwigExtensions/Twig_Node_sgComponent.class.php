@@ -24,11 +24,10 @@ class Twig_Node_sgComponent extends Twig_Node
     
     
     $compiler
-      ->write('$component = new ' . $classMethod[0] . 'Component();')
-      ->raw("\n")
-      ->write('$output = $component->' . $classMethod[1] . '(')
+      ->write('$component = new ' . $classMethod[0] . 'Component(')
       ->subcompile($this->variables)
-      ->raw(");\n")
+      ->raw(');' . "\n")
+      ->write('$output = $component->' . $classMethod[1] . '();' . "\n")
       ->write('echo $output;' . "\n")
     ;
     
