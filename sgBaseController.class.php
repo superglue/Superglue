@@ -80,23 +80,20 @@ class sgBaseController
     return $title;
   }
   
-  /*
-    TODO Still need to work out workflow for error debugging
-  */
   public function throwError($error)
   {
     if (strpos($error->getMessage(), 'Unable to find template') === 0)
     {
-      $this->throwErrorCode(404);
+      $this->throwErrorCode(404, $error);
     }
     else
     {
-      $this->throwErrorCode(500);
+      $this->throwErrorCode(500, $error);
     }
     exit();
   }
   
-  public function throwErrorCode($httpErrorCode, $header = '')
+  public function throwErrorCode($httpErrorCode, $error = NULL, $header = '')
   {
     $headers = array(
       '404' => 'HTTP/1.0 404 Not Found',
@@ -110,6 +107,12 @@ class sgBaseController
     {
       header($headers[(string)$httpErrorCode]);
     }
+    
+    if (sgConfiguration::get('settings', 'debug'))
+    {
+      exit('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
+    }
+    
     try
     {
       $view = $this->loadTemplate($httpErrorCode);
@@ -117,20 +120,12 @@ class sgBaseController
     }
     catch (Exception $error)
     {
-      // if the error template can't load, display the error or throw a 500 error if debugging is disabled
-      if (sgConfiguration::get('settings', 'debug'))
+      // if the error is in the overridden 500 template, just display the core 500 template
+      if ($httpErrorCode == 500)
       {
-        print '<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>';
+        $this->twig->getLoader()->setPaths(end($this->twig->getLoader()->getPaths()));
       }
-      else
-      {
-        // if the error is in the overridden 500 template, just display the core 500 template
-        if ($httpErrorCode == 500)
-        {
-          $this->twig->getLoader()->setPaths(end($this->twig->getLoader()->getPaths()));
-        }
-        $this->throwErrorCode(500);
-      }
+      $this->throwErrorCode(500);
     }
   }
   
