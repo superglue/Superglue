@@ -22,7 +22,12 @@ class sgBaseController
 
   public function initTwig()
   {
-    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
+    $templateLocations = array(
+      sgConfiguration::getRootDir() . '/views',
+      dirname(__FILE__) . '/views',
+    );
+    
+    $loader = new Twig_Loader_Filesystem($templateLocations, sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
     $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
     
     foreach (sgAutoloader::getPaths() as $class => $path)
@@ -76,63 +81,57 @@ class sgBaseController
   }
   
   /*
-    TODO Clean up potential endless loops in error throwing and refactor for cleaner code
+    TODO Still need to work out workflow for error debugging
   */
-  public function throw404Error()
+  public function throwError($error)
   {
-    header("HTTP/1.0 404 Not Found");
-    try {
-      $view = $this->twig->loadTemplate('404.html');
-      print '<pre>';
-      print_r($view);
-      print '</pre>';
-      exit;
+    if (strpos($error->getMessage(), 'Unable to find template') === 0)
+    {
+      $this->throwErrorCode(404);
     }
-    catch(Exception $e) {
-      if (strpos($e->getMessage(), 'Unable to find template') === 0) {
-        $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
-        $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
-        $view = $this->loadTemplate('404');
-      }
-      else {
-        $this->throwError($e);
-      }
+    else
+    {
+      $this->throwErrorCode(500);
     }
-    print $view->render($this->getTemplateVars());
     exit();
   }
   
-  public function throwError($error)
+  public function throwErrorCode($httpErrorCode, $header = '')
   {
-    if (strpos($error->getMessage(), 'Unable to find template') === 0) {
-      if (!sgConfiguration::get('settings', 'debug')) {
-        $this->throw404Error();
+    $headers = array(
+      '404' => 'HTTP/1.0 404 Not Found',
+      '500' => 'HTTP/1.0 500 Internal Server Error',
+    );
+    if (!empty($header))
+    {
+      header($header);
+    }
+    else
+    {
+      header($headers[(string)$httpErrorCode]);
+    }
+    try
+    {
+      $view = $this->loadTemplate($httpErrorCode);
+      print $view->render($this->getTemplateVars());
+    }
+    catch (Exception $error)
+    {
+      // if the error template can't load, display the error or throw a 500 error if debugging is disabled
+      if (sgConfiguration::get('settings', 'debug'))
+      {
+        print '<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>';
+      }
+      else
+      {
+        // if the error is in the overridden 500 template, just display the core 500 template
+        if ($httpErrorCode == 500)
+        {
+          $this->twig->getLoader()->setPaths(end($this->twig->getLoader()->getPaths()));
+        }
+        $this->throwErrorCode(500);
       }
     }
-    header("HTTP/1.0 500 Internal Server Error");
-    if (sgConfiguration::get('settings', 'debug')) {
-      $loader = new Twig_Loader_String();
-      $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
-      $view = $this->twig->loadTemplate('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
-      print $view->render(array());
-      exit();
-    }
-    try {
-      $view = $this->twig->loadTemplate('500.html');
-    }
-    catch(Exception $thisError) {
-      if (strpos($thisError->getMessage(), 'Unable to find template') === 0) {
-        $loader = new Twig_Loader_Filesystem(dirname(__FILE__) . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', sgConfiguration::get('settings', 'debug'));
-        $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
-        $view = $this->loadTemplate('500');
-      }
-      else {
-        sgConfiguration::set('settings', 'debug', true);
-        $this->throwError($thisError);
-      }
-    }
-    print $view->render($this->getTemplateVars());
-    exit();
   }
   
   /*
@@ -140,21 +139,23 @@ class sgBaseController
   */
   public function render($template = NULL)
   {
-    try {
-      if ($template) {
+    try
+    {
+      if ($template)
+      {
         $view = $this->loadTemplate($template);
       }
-      else if (isset($this->matchedRoute['template'])) {
+      else if (isset($this->matchedRoute['template']))
+      {
         $view = $this->loadTemplate($this->matchedRoute['template']);
       }
-      else {
+      else
+      {
         $view = $this->loadTemplate($this->matchedRoute['name']);
       }
     }
-    /*
-      FIXME recent changes in twig make it impossible to catch errors and throw a 500 error when debug is turned off
-    */
-    catch(Exception $e) {
+    catch(Exception $e)
+    {
       $this->throwError($e);
     }
     
