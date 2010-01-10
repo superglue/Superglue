@@ -6,34 +6,16 @@
 */
 class sgBaseComponent
 {
-  protected $twig;
+  protected $view;
   public $args;
   public $base;
   
   
   function __construct($args = array())
   {
-    $this->initTwig();
+    $this->view = new sgView();
     $this->args = $args;
     $this->base = sgContext::getRelativeBaseUrl();
-  }
-  
-  public function initTwig()
-  {
-    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views');
-    $this->twig = new Twig_Environment($loader, array(
-      'debug' => sgConfiguration::get('settings', 'debug'),
-      'cache' => sgConfiguration::get('settings', 'cache_dir') . '/templates',
-      'auto_reload' => !sgConfiguration::get('settings', 'cache_templates'),  // TODO maybe this should instead dictate the cache setting
-    ));
-    
-    foreach (sgAutoloader::getPaths() as $class => $path)
-    {
-      if (strpos($class, 'Twig_Extension') === 0)
-      {
-        $this->twig->addExtension(new $class());
-      }
-    }
   }
   
   public function getTemplateVars()
@@ -59,13 +41,13 @@ class sgBaseComponent
   {
     try {
       if ($template) {
-        $view = $this->loadTemplate($template);
+        $this->loadTemplate($template);
       }
       else if (isset($this->matchedRoute['template'])) {
-        $view = $this->loadTemplate($this->matchedRoute['template']);
+        $this->loadTemplate($this->matchedRoute['template']);
       }
       else {
-        $view = $this->loadTemplate($this->matchedRoute['name']);
+        $this->loadTemplate($this->matchedRoute['name']);
       }
     }
     /*
@@ -78,16 +60,14 @@ class sgBaseComponent
       }
     }
     
-    return $view->render($this->getTemplateVars());
+    return $this->view->render($this->getTemplateVars());
   }
   
   public function loadTemplate($name)
   {
     //set view so that exception can be thrown without setting template_name
-    $view = $this->twig->loadTemplate("_$name.html");
+    $this->view->loadTemplate("_$name.html");
     $this->template_structure = explode('/', $name);
     $this->template_name = end($this->template_structure);
-    
-    return $view;
   }
 }
