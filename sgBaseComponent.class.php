@@ -20,8 +20,12 @@ class sgBaseComponent
   
   public function initTwig()
   {
-    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views', sgConfiguration::get('settings', 'cache_dir') . '/templates', !sgConfiguration::get('settings', 'cache_templates'));
-    $this->twig = new Twig_Environment($loader, array('debug' => sgConfiguration::get('settings', 'debug')));
+    $loader = new Twig_Loader_Filesystem(sgConfiguration::getRootDir() . '/views');
+    $this->twig = new Twig_Environment($loader, array(
+      'debug' => sgConfiguration::get('settings', 'debug'),
+      'cache' => sgConfiguration::get('settings', 'cache_dir') . '/templates',
+      'auto_reload' => !sgConfiguration::get('settings', 'cache_templates'),  // TODO maybe this should instead dictate the cache setting
+    ));
     
     foreach (sgAutoloader::getPaths() as $class => $path)
     {
