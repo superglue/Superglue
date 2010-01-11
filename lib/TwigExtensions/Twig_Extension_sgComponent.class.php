@@ -12,11 +12,4 @@ class Twig_Extension_sgComponent extends Twig_Extension
   {
     return 'component';
   }
-  
-  // public function execute($class, $method, $args)
-  //   {
-  //     $component = new "{$class}Component"($args);
-  //     
-  //     return $component->$method;
-  //   }
 }

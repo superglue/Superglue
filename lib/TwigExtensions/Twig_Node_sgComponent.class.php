@@ -22,41 +22,15 @@ class Twig_Node_sgComponent extends Twig_Node
     $compiler->addDebugInfo($this);
     $classMethod = explode('|', $this->expr->getValue());
     
-    
+    $compiler->write('$component = new ' . $classMethod[0] . 'Component(');
+    if ($this->variables !== null)
+    {
+      $compiler->subcompile($this->variables);
+    }
     $compiler
-      ->write('$component = new ' . $classMethod[0] . 'Component(')
-      ->subcompile($this->variables)
       ->raw(');' . "\n")
       ->write('$output = $component->' . $classMethod[1] . '();' . "\n")
       ->write('echo $output;' . "\n")
     ;
-    
-    // $compiler
-    //   ->write('$this->env->loadTemplate(')
-    //   ->subcompile($this->expr)
-    //   ->raw(')->display(')
-    // ;
-    // 
-    // if (null === $this->variables)
-    // {
-    //   $compiler->raw('$context');
-    // }
-    // else
-    // {
-    //   $compiler->subcompile($this->variables);
-    // }
-    // 
-    // $compiler->raw(");\n");
-    // 
-    // if ($this->sandboxed)
-    // {
-    //   $compiler
-    //     ->write("if (!\$alreadySandboxed)\n", "{\n")
-    //     ->indent()
-    //     ->write("\$sandbox->disableSandbox();\n")
-    //     ->outdent()
-    //     ->write("}\n")
-    //   ;
-    // }
   }
 }
