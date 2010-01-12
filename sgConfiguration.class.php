@@ -35,13 +35,16 @@ class sgConfiguration
 
   private static function _initAutoloader()
   {
-    sgAutoloader::loadPaths(array(
-      dirname(__FILE__) . '/../',
-      sgContext::getRootDir() . '/config/',
-      sgContext::getRootDir() . '/lib/',
-      sgContext::getRootDir() . '/controllers/',
-      sgContext::getRootDir() . '/models/',
-    ));
+    if (!sgAutoloader::checkCache())
+    {
+      sgAutoloader::loadPaths(array(
+        dirname(__FILE__) . '/../',
+        sgContext::getRootDir() . '/config/',
+        sgContext::getRootDir() . '/lib/',
+        sgContext::getRootDir() . '/controllers/',
+        sgContext::getRootDir() . '/models/',
+      ));
+    }
     Twig_Autoloader::register();
   }
   

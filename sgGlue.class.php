@@ -29,23 +29,13 @@
  *
  */
 class sgGlue {
-  static protected $cachedRoutes = null;
-  /**
-   * stick
-   *
-   * the main static function of the Glue class.
-   *
-   * @param   array  	$urls  	  The regex-based url to class mapping
-   * @throws  Exception         Thrown if corresponding class is not found
-   * @throws  Exception         Thrown if no match is found
-   * @throws  BadMethodCallException  Thrown if a corresponding GET,POST is not found
-   *
-   */
+  static public $cachedRoutes = null;
+  
   static public function checkRouteCache($path, $method)
   {
-    if ($routes = self::getCachedRoutes() && isset($routes["$method $path"]))
+    if (self::getCachedRoutes() && isset(self::$cachedRoutes["$method $path"]))
     {
-      self::dispatch($routes["$method $path"], $routes["$method $path"]['matches']);
+      return self::$cachedRoutes["$method $path"];
     }
     
     return false;
@@ -57,9 +47,11 @@ class sgGlue {
       return self::$cachedRoutes;
     }
     $cacheFile = sgConfiguration::get('settings', 'cache_dir') . '/sgRouteCache.cache';
-    if (is_file($cacheFile) && $contents = file_get_contents($cacheFile)) {
+    if (is_file($cacheFile) && $contents = file_get_contents($cacheFile))
+    {
       self::$cachedRoutes = unserialize($contents);
-      return $cachedRoutes;
+      
+      return true;
     }
     
     return false;
@@ -72,7 +64,7 @@ class sgGlue {
       if (class_exists($route['class'])) {
         $obj = new $route['class']($matches);
         if (method_exists($obj, $method)) {
-          $obj->$method();
+          print $obj->$method();
         } else {
           throw new BadMethodCallException("Method, $method, not supported.");
         }
@@ -82,18 +74,12 @@ class sgGlue {
     }
     else {
       $obj = new sgBaseController($matches);
-      $obj->$method();
+      print $obj->$method();
     }
   }
   
   static public function saveCachedRoutes()
   {
-    
-    // self::$cacheRoutes['']
-    // print '<pre>';
-    // print_r('sdf');
-    // print '</pre>';
-    // exit;
     $data = serialize(self::$cachedRoutes);
     file_put_contents(sgConfiguration::get('settings', 'cache_dir') . '/sgRouteCache.cache', $data);
   }
@@ -102,31 +88,46 @@ class sgGlue {
   {
     $method = strtoupper($_SERVER['REQUEST_METHOD']);
     $path = sgContext::getCurrentPath();
-    $found = false;
-    //self::checkRouteCache($path, $method);
-    foreach ($routes as $name => $route) {
-      $regex = str_replace('/', '\/', $route['path']);
-      $regex = '^' . $regex . '\/?$';
-      if (preg_match("/$regex/i", $path, $matches)) {
-        $found = true;
-        $route['name'] = $name;
-        $route['matches'] = $matches;
-        self::$cachedRoutes["$method $path"] = $route;
-        //self::saveCachedRoutes();
-        self::dispatch($route, $method, $matches);
-        break;
-      }
-    }
-    if (!$found) {
-      $route = array(
-        'class' => 'sgStaticController',
-        'method' => $method,
-      );
-      sgContext::setCurrentRoute($route);
-      $obj = new sgStaticController();
-      $obj->$method();
+    $matchedRoute = null;
+    
+    if (sgConfiguration::get('settings', 'cache_routes'))
+    {
+      $matchedRoute = self::checkRouteCache($path, $method);
     }
     
-    //self::saveCachedRoutes();
+    if (!$matchedRoute)
+    {
+      foreach ($routes as $name => $route)
+      {
+        $matches = array();
+        $regex = str_replace('/', '\/', $route['path']);
+        $regex = '^' . $regex . '\/?$';
+        if (preg_match("/$regex/i", $path, $matches))
+        {
+          $route['name'] = $name;
+          $route['matches'] = $matches;
+          $route['path'] = $path;
+          $matchedRoute = $route;
+          self::$cachedRoutes["$method $path"] = $matchedRoute;
+          break;
+        }
+      }
+    }
+    
+    if (!$matchedRoute)
+    {
+      $matchedRoute = array(
+        'path' => $path,
+        'class' => 'sgStaticController',
+        'method' => $method,
+        'matches' => array(),
+      );
+      
+      self::$cachedRoutes["$method $path"] = $matchedRoute;
+    }
+    
+    self::dispatch($matchedRoute, $method, $matchedRoute['matches']);
+    self::saveCachedRoutes();
+    sgAutoloader::shutdown();
   }
 }

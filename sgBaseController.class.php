@@ -65,13 +65,9 @@ class sgBaseController
   {
     if (strpos($error->getMessage(), 'Unable to find template') === 0)
     {
-      $this->throwErrorCode(404, $error);
+      return $this->throwErrorCode(404, $error);
     }
-    else
-    {
-      $this->throwErrorCode(500, $error);
-    }
-    exit();
+    return $this->throwErrorCode(500, $error);
   }
   
   public function throwErrorCode($httpErrorCode, $error = NULL, $header = '')
@@ -97,7 +93,7 @@ class sgBaseController
     try
     {
       $this->loadTemplate($httpErrorCode);
-      print $this->view->render($this->getTemplateVars());
+      return $this->view->render($this->getTemplateVars());
     }
     catch (Exception $error)
     {
@@ -132,11 +128,18 @@ class sgBaseController
     }
     catch(Exception $e)
     {
-      $this->throwError($e);
+      return $this->throwError($e);
+    }
+
+    // update route cache with appropriate template
+    if (sgConfiguration::get('settings', 'cache_routes'))
+    {
+      $method = strtoupper($_SERVER['REQUEST_METHOD']);
+      $path = sgContext::getCurrentPath();
+      sgGlue::$cachedRoutes["$method $path"]['template'] = str_replace('.html', '', $this->view->getView()->getName());
     }
     
-    print $this->view->render($this->getTemplateVars());
-    exit();
+    return $this->view->render($this->getTemplateVars());
   }
   
   public function loadTemplate($name)

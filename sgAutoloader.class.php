@@ -3,13 +3,14 @@ require(dirname(__FILE__) . '/sgFilteredDirectoryIterator.class.php');
 
 class sgAutoloader
 {
-  private static $_cache = array();
   private static $instance;
   private static $_paths = array();
   private static $_exclusions = array('Twig', '.svn', 'CVS');
+  private static $_cache = array();
+  private static $isCached = false;
   
   
-  function __construct()
+  public function __construct()
   {
     //init
   }
@@ -33,15 +34,19 @@ class sgAutoloader
       self::$_cache = array();
     }
     
-    //self::$_paths = $paths;
     foreach ($paths as $path)
     {
-      $files = new RecursiveIteratorIterator(new sgFilteredDirectoryIterator($path, $extension, self:: $_exclusions));
+      $files = new RecursiveIteratorIterator(new sgFilteredDirectoryIterator($path, $extension, self::$_exclusions));
       foreach ($files as $file)
       {
-        self::$_cache[$file->getBaseName($extension)] = $file->getPathname();
+        self::loadFile($file->getBaseName($extension), $file->getPathname());
       }
     }
+  }
+  
+  public static function loadFile($name, $path)
+  {
+    self::$_cache[$name] = $path;
   }
   
   public static function getPaths()
@@ -58,10 +63,29 @@ class sgAutoloader
     return self::$instance;
   }
   
+  //only bootstrap the bare essentials
   public static function register()
   {
-    self::getInstance()->loadPaths(array(dirname(__FILE__) . '/../'));
+    self::loadFile('sgContext', realpath(dirname(__FILE__) . '/sgContext.class.php'));
+    self::loadFile('sgConfiguration', realpath(dirname(__FILE__) . '/sgConfiguration.class.php'));
     spl_autoload_register(array(__CLASS__, 'loadClass'));
+  }
+  
+  public static function checkCache()
+  {
+    if (sgConfiguration::get('settings', 'cache_autoload'))
+    {
+      $cacheFile = sgConfiguration::get('settings', 'cache_dir') . '/sgAutoloadCache.cache';
+      if (file_exists($cacheFile))
+      {
+        self::$isCached = true;
+        self::$_cache = unserialize(file_get_contents($cacheFile));
+        return true;
+      }
+    }
+    self::$isCached = false;
+    self::loadPaths(array(dirname(__FILE__) . '/../'));
+    return false;
   }
   
   public static function loadClass($className)
@@ -73,5 +97,18 @@ class sgAutoloader
     }
     
     return false;
+  }
+  
+  public static function shutdown()
+  {
+    if (sgConfiguration::get('settings', 'cache_autoload'))
+    {
+      $cacheFile = sgConfiguration::get('settings', 'cache_dir') . '/sgAutoloadCache.cache';
+      if (!file_exists($cacheFile))
+      {
+        $data = serialize(self::$_cache);
+        file_put_contents($cacheFile, $data);
+      }
+    }
   }
 }
