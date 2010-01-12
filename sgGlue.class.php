@@ -127,7 +127,15 @@ class sgGlue {
     }
     
     self::dispatch($matchedRoute, $method, $matchedRoute['matches']);
-    self::saveCachedRoutes();
+    self::shutdown();
     sgAutoloader::shutdown();
+  }
+  
+  public static function shutdown()
+  {
+    if (sgConfiguration::get('settings', 'cache_routes'))
+    {
+      self::saveCachedRoutes();
+    }
   }
 }
