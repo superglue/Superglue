@@ -3,6 +3,6 @@ sgConfiguration::createConfig('settings', array(
   'site_name' => 'New Superglue Project',
   'debug' => true,
   'cache_templates' => false,
-  'cache_routes' => true,
-  'cache_autoload' => true,
+  'cache_routes' => false,
+  'cache_autoload' => false,
 ));
