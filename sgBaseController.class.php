@@ -18,6 +18,7 @@ class sgBaseController
     $this->matchedRoute = sgContext::getCurrentRoute();
     $this->base = sgContext::getRelativeBaseUrl();
     $this->title = $this->guessTitle();
+    $this->site_name = sgConfiguration::get('settings', 'site_name');
   }
   
   public function GET()
