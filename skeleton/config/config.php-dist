@@ -5,4 +5,5 @@ sgConfiguration::createConfig('settings', array(
   'cache_templates' => false,
   'cache_routes' => false,
   'cache_autoload' => false,
+  'magic_routing' => true,
 ));

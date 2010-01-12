@@ -60,21 +60,41 @@ class sgGlue {
   static public function dispatch($route, $method, $matches)
   {
     sgContext::setCurrentRoute($route);
-    if (isset($route['class'])) {
-      if (class_exists($route['class'])) {
-        $obj = new $route['class']($matches);
-        if (method_exists($obj, $method)) {
-          print $obj->$method();
-        } else {
-          throw new BadMethodCallException("Method, $method, not supported.");
-        }
-      } else {
-        throw new Exception("Class, $class, not found.");
+    if (isset($route['disabled']) && $route['disabled'] == true)
+    {
+      if (sgConfiguration::get('settings', 'debug'))
+      {
+        exit('<pre>Route "' . $route['name'] . '" is disabled.' . "\n</pre>");
       }
-    }
-    else {
       $obj = new sgBaseController($matches);
-      print $obj->$method();
+      print $obj->throwErrorCode('404');
+    }
+    else
+    {
+      if (isset($route['class']))
+      {
+        if (class_exists($route['class']))
+        {
+          $obj = new $route['class']($matches);
+          if (method_exists($obj, $method))
+          {
+            print $obj->$method();
+          }
+          else
+          {
+            throw new BadMethodCallException("Method, $method, not supported.");
+          }
+        }
+        else
+        {
+          throw new Exception("Class, $class, not found.");
+        }
+      }
+      else
+      {
+        $obj = new sgBaseController($matches);
+        print $obj->$method();
+      }
     }
   }
   
@@ -116,17 +136,36 @@ class sgGlue {
     
     if (!$matchedRoute)
     {
-      $matchedRoute = array(
-        'path' => $path,
-        'class' => 'sgStaticController',
-        'method' => $method,
-        'matches' => array(),
-      );
-      
-      self::$cachedRoutes["$method $path"] = $matchedRoute;
+      if (sgConfiguration::get('settings', 'magic_routing'))
+      {
+        $matchedRoute = array(
+          'path' => $path,
+          'class' => 'sgMagicController',
+          'method' => $method,
+          'matches' => array(),
+        );
+        self::$cachedRoutes["$method $path"] = $matchedRoute;
+      }
+      else
+      {
+        $obj = new sgBaseController($matches);
+        print $obj->throwErrorCode('404');
+      }
     }
     
-    self::dispatch($matchedRoute, $method, $matchedRoute['matches']);
+    if ($matchedRoute)
+    {
+      if (!sgConfiguration::get('settings', 'magic_routing') && $matchedRoute['class'] == 'sgMagicController')
+      {
+        $obj = new sgBaseController($matchedRoute['matches']);
+        print $obj->throwErrorCode('404');
+      }
+      else
+      {
+        self::dispatch($matchedRoute, $method, $matchedRoute['matches']);
+      }
+    }
+
     self::shutdown();
     sgAutoloader::shutdown();
   }
