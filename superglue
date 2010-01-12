@@ -90,7 +90,14 @@ function sgTaskInitProject()
   copy($scriptDir . '/skeleton/config/ProjectConfiguration.class.php-dist', $targetDir . '/config/ProjectConfiguration.class.php');
   copy($scriptDir . '/skeleton/config/config.php-dist', $targetDir . '/config/config.php');
   copy($scriptDir . '/skeleton/config/routing.php-dist', $targetDir . '/config/routing.php');
-  symlink(rel_path(realpath(__FILE__), $targetDir), $targetDir . '/superglue');
+  if (file_check_location(realpath(__FILE__), $targetDir))
+  {
+    symlink(rel_path(realpath(__FILE__), $targetDir), $targetDir . '/superglue');
+  }
+  else
+  {
+    symlink(realpath(__FILE__), $targetDir . '/superglue');
+  }
   chmod($targetDir . '/superglue', 0755);
   sgMessage('Finished initializing project.');
 }
@@ -160,6 +167,23 @@ function rscandir($base='', $includeHidden = false, &$data=array()) {
   }
   
   return $data;
+}
+
+// based on file_check_location from drupal: http://api.drupal.org/api/function/file_check_location/6
+function file_check_location($source, $directory = '') {
+  $check = realpath($source);
+  if ($check && file_exists($check)) {
+    $source = $check;
+  }
+  else {
+    // This file does not yet exist
+    $source = realpath(dirname($source)) .'/'. basename($source);
+  }
+  $directory = realpath($directory);
+  if ($directory && file_exists($directory) && strpos($source, $directory) !== 0) {
+    return 0;
+  }
+  return $source;
 }
 
 function sgIsProjectDir()
