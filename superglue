@@ -90,12 +90,15 @@ function sgTaskInitProject()
   copy($scriptDir . '/skeleton/config/ProjectConfiguration.class.php-dist', $targetDir . '/config/ProjectConfiguration.class.php');
   copy($scriptDir . '/skeleton/config/config.php-dist', $targetDir . '/config/config.php');
   copy($scriptDir . '/skeleton/config/routing.php-dist', $targetDir . '/config/routing.php');
+  copy($scriptDir . '/skeleton/views/index.html', $targetDir . '/views/index.html');
   if (file_check_location(realpath(__FILE__), $targetDir))
   {
     symlink(rel_path(realpath(__FILE__), $targetDir), $targetDir . '/superglue');
   }
   else
   {
+    mkdir($targetDir . '/lib', 0755);
+    symlink(realpath(dirname(__FILE__)), $targetDir . '/lib/superglue');
     symlink(realpath(__FILE__), $targetDir . '/superglue');
   }
   chmod($targetDir . '/superglue', 0755);
