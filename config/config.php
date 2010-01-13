@@ -1,10 +1,10 @@
 <?php
 
 return array(
-  'site_name' => 'New Superglue Project',
   'magic_routing' => true,
-  'debug' => true,
+  'debug' => false,
   'cache_templates' => false,
   'cache_routes' => false,
   'cache_autoload' => false,
+  'cache_dir' => sgConfiguration::getRootDir() . '/cache',
 );

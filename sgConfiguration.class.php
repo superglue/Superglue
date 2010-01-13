@@ -5,14 +5,16 @@ require(dirname(__FILE__) . '/vendor/Twig/lib/Twig/Autoloader.php');
 class sgConfiguration
 {
   private static $instance;
-  protected static $config;
+  protected static $config = array();
   
   private function __construct()
   {
     sgContext::getInstance()->setRootDir(self::getRootDir());
-    require_once(sgContext::getInstance()->getRootDir() . '/config/config.php');
-    require_once(sgContext::getInstance()->getRootDir() . '/config/routing.php');
-    self::set('settings', 'cache_dir', sgConfiguration::getRootDir() . '/cache');
+    
+    self::loadConfig('settings', dirname(__FILE__) . '/config/config.php');
+    self::loadConfig('settings', sgContext::getInstance()->getRootDir() . '/config/config.php');
+    self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
+    
     self::_initAutoloader();
     
     $this->init();
@@ -61,10 +63,39 @@ class sgConfiguration
     return self::$instance;
   }
   
-  // this is used for adding a new config type with settings
-  public static function createConfig($configType, $settings = null)
+  public static function loadConfig($configType, $path)
   {
-    self::$config[$configType] = $settings;
+    $path = realpath($path);
+    $loadedConfig = require_once $path;
+    if (is_array($loadedConfig))
+    {
+      $config = array($configType => $loadedConfig);
+      self::$config = self::array_merge_recursive_distinct(self::$config, $config);
+    }
+    else
+    {
+      throw new Exception('Configuration file "' . $path . '" does not return an array.');
+    }
+  }
+  
+  // http://us.php.net/manual/en/function.array-merge-recursive.php#92195
+  private static function array_merge_recursive_distinct(array &$array1, array &$array2)
+  {
+    $merged = $array1;
+
+    foreach ($array2 as $key => &$value)
+    {
+      if (is_array($value) && isset($merged[$key]) && is_array($merged[$key]))
+      {
+        $merged[$key] = self::array_merge_recursive_distinct($merged[$key], $value);
+      }
+      else
+      {
+        $merged[$key] = $value;
+      }
+    }
+    
+    return $merged;
   }
   
   public static function set($configType, $setting, $value)
@@ -72,10 +103,10 @@ class sgConfiguration
     self::$config[$configType][$setting] = $value;
   }
   
-  public static function get($configType, $setting = NULL)
+  public static function get($configType, $setting = null, $default = null)
   {
     if ($setting) {
-      return self::$config[$configType][$setting];
+      return isset(self::$config[$configType][$setting]) ? self::$config[$configType][$setting] : $default;
     }
     else {
       return self::$config[$configType];
