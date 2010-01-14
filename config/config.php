@@ -7,4 +7,8 @@ return array(
   'cache_routes' => false,
   'cache_autoload' => false,
   'cache_dir' => sgConfiguration::getRootDir() . '/cache',
+  'autoload_exclusions' => array(
+    'foo',
+    'bar',
+  ),
 );

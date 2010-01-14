@@ -14,7 +14,7 @@ class sgConfiguration
     self::loadConfig('settings', dirname(__FILE__) . '/config/config.php');
     self::loadConfig('settings', sgContext::getInstance()->getRootDir() . '/config/config.php');
     self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
-    
+
     self::_initAutoloader();
     
     $this->init();
@@ -78,14 +78,18 @@ class sgConfiguration
     }
   }
   
-  // http://us.php.net/manual/en/function.array-merge-recursive.php#92195
+  // modified from http://us.php.net/manual/en/function.array-merge-recursive.php#92195
   private static function array_merge_recursive_distinct(array &$array1, array &$array2)
   {
     $merged = $array1;
-
+    
     foreach ($array2 as $key => &$value)
     {
-      if (is_array($value) && isset($merged[$key]) && is_array($merged[$key]))
+      if (is_int($key))
+      {
+        $merged[] = $value;
+      }
+      else if (is_array($value) && !empty($value) && isset($merged[$key]) && is_array($merged[$key]))
       {
         $merged[$key] = self::array_merge_recursive_distinct($merged[$key], $value);
       }
