@@ -14,6 +14,11 @@ class sgView
     if (!$overridePaths)
     {
       $templatePaths[] = sgConfiguration::getRootDir() . '/views';
+      $enabledPlugins = sgConfiguration::get('settings', 'enabled_plugins', array());
+      foreach ($enabledPlugins as $plugin)
+      {
+        $templatePaths[] = sgConfiguration::getRootDir() . "/plugins/$plugin/views";
+      }
       $templatePaths[] = dirname(__FILE__) . '/views';
     }
     

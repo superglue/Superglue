@@ -23,7 +23,7 @@ class sgBaseController
   
   public function GET()
   {
-    return $this->render(array());
+    return $this->render();
   }
   
   public function getTemplateVars()

@@ -5,7 +5,7 @@ class sgAutoloader
 {
   private static $instance;
   private static $_paths = array();
-  private static $_exclusions = array('Twig', '.svn', 'CVS');
+  private static $_exclusions = array();
   private static $_cache = array();
   private static $isCached = false;
   
@@ -17,6 +17,13 @@ class sgAutoloader
   
   public static function setExclusions($exclusions = array(), $append = true)
   {
+    foreach ($exclusions as &$exclusion)
+    {
+      if (strpos($exclusion, '/') !== false)
+      {
+        $exclusion = realpath($exclusion);
+      }
+    }
     if ($append)
     {
       self::$_exclusions = array_merge(self::$_exclusions, $exclusions);
@@ -33,9 +40,9 @@ class sgAutoloader
     {
       self::$_cache = array();
     }
-    
     foreach ($paths as $path)
     {
+      $path = realpath($path);
       $files = new RecursiveIteratorIterator(new sgFilteredDirectoryIterator($path, $extension, self::$_exclusions));
       foreach ($files as $file)
       {
@@ -84,7 +91,7 @@ class sgAutoloader
       }
     }
     self::$isCached = false;
-    self::loadPaths(array(dirname(__FILE__) . '/../'));
+    //self::loadPaths(array(dirname(__FILE__) . '/../'));
     return false;
   }
   

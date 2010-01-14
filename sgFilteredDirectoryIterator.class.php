@@ -17,7 +17,8 @@ class sgFilteredDirectoryIterator extends RecursiveFilterIterator
   function accept()
   {
     $filename = $this->getInnerIterator()->getFilename();
-    if (($this->getInnerIterator()->isDir() && !in_array($filename, $this->_exclusions)) || ($this->getInnerIterator()->isFile() && stripos(strrev($filename), $this->_extension) === 0 && !in_array($filename, $this->_exclusions))) {
+    $path = realpath($this->getInnerIterator()->key());
+    if (($this->getInnerIterator()->isDir() && (!in_array($filename, $this->_exclusions) && !in_array($path, $this->_exclusions))) || ($this->getInnerIterator()->isFile() && stripos(strrev($filename), $this->_extension) === 0 && !in_array($filename, $this->_exclusions))) {
       return true;
     }
     

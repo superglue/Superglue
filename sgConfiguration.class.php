@@ -6,6 +6,7 @@ class sgConfiguration
 {
   private static $instance;
   protected static $config = array();
+  protected static $enabledPlugins = array();
   
   private function __construct()
   {
@@ -13,8 +14,16 @@ class sgConfiguration
     
     self::loadConfig('settings', dirname(__FILE__) . '/config/config.php');
     self::loadConfig('settings', sgContext::getInstance()->getRootDir() . '/config/config.php');
+    
+    self::$enabledPlugins = self::get('settings', 'enabled_plugins', array());
+    foreach (self::$enabledPlugins as $plugin)
+    {
+      self::loadConfig('settings', sgContext::getInstance()->getRootDir() . "/plugins/$plugin/config/config.php", true);
+      self::loadConfig('routing', sgContext::getInstance()->getRootDir() . "/plugins/$plugin/config/routing.php", true);
+    }
+    
     self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
-
+    
     self::_initAutoloader();
     
     $this->init();
@@ -39,13 +48,18 @@ class sgConfiguration
   {
     if (!sgAutoloader::checkCache())
     {
-      sgAutoloader::loadPaths(array(
-        dirname(__FILE__) . '/../',
-        sgContext::getRootDir() . '/config/',
-        sgContext::getRootDir() . '/lib/',
-        sgContext::getRootDir() . '/controllers/',
-        sgContext::getRootDir() . '/models/',
-      ));
+      $paths = array(dirname(__FILE__) . '/../');
+      foreach (self::$enabledPlugins as $plugin)
+      {
+        $paths[] = sgContext::getRootDir() . "/plugins/$plugin/";
+      }
+      $paths[] = sgContext::getRootDir() . '/config/';
+      $paths[] = sgContext::getRootDir() . '/lib/';
+      $paths[] = sgContext::getRootDir() . '/controllers/';
+      $paths[] = sgContext::getRootDir() . '/models/';
+      
+      sgAutoloader::setExclusions(self::get('settings', 'autoload_exclusions', array()));
+      sgAutoloader::loadPaths($paths);
     }
     Twig_Autoloader::register();
   }
@@ -63,14 +77,22 @@ class sgConfiguration
     return self::$instance;
   }
   
-  public static function loadConfig($configType, $path)
+  public static function loadConfig($configType, $path, $checkFileExists = false)
   {
     $path = realpath($path);
+    if ($checkFileExists && !file_exists($path))
+    {
+      return false;
+    }
+    
     $loadedConfig = require_once $path;
     if (is_array($loadedConfig))
     {
-      $config = array($configType => $loadedConfig);
-      self::$config = self::array_merge_recursive_distinct(self::$config, $config);
+      if (!empty($loadedConfig))
+      {
+        $config = array($configType => $loadedConfig);
+        self::$config = self::array_merge_recursive_distinct(self::$config, $config);
+      }
     }
     else
     {
