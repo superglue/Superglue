@@ -25,7 +25,7 @@ class sgConfiguration
     self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
     
     self::_initAutoloader();
-    
+    self::initPluginConfigurations();
     $this->init();
     
     return;
@@ -99,6 +99,21 @@ class sgConfiguration
       throw new Exception('Configuration file "' . $path . '" does not return an array.');
     }
   }
+  
+  private static function initPluginConfigurations()
+  {
+    $paths = sgAutoloader::getPaths();
+    foreach (self::$enabledPlugins as $plugin)
+    {
+      $class = "{$plugin}Configuration";
+      if (isset($paths[$class]))
+      {
+        //php 5.3 allows $class::init(), but I still want 5.2.x support
+        call_user_func(array($class, 'init'));
+      }
+    }
+  }
+  
   
   // modified from http://us.php.net/manual/en/function.array-merge-recursive.php#92195
   private static function array_merge_recursive_distinct(array &$array1, array &$array2)
