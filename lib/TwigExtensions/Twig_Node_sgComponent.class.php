@@ -22,10 +22,13 @@ class Twig_Node_sgComponent extends Twig_Node
     $compiler->addDebugInfo($this);
     $classMethod = explode('|', $this->expr->getValue());
     
-    $compiler->write('$component = new ' . $classMethod[0] . 'Component(');
+    $compiler->write('$component = new ' . $classMethod[0] . "Component('" . $classMethod[0] . "', '" . $classMethod[1] . "'");
     if ($this->variables !== null)
     {
-      $compiler->subcompile($this->variables);
+      $compiler
+        ->raw(', ')
+        ->subcompile($this->variables)
+      ;
     }
     $compiler
       ->raw(');' . "\n")

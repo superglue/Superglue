@@ -9,11 +9,14 @@ class sgBaseComponent
   protected $view;
   public $args;
   public $base;
+  public $class;
+  public $method;
   
-  
-  function __construct($args = array())
+  function __construct($class, $method, $args = array())
   {
     $this->view = new sgView();
+    $this->class = $class;
+    $this->method = $method;
     $this->args = $args;
     $this->base = sgContext::getRelativeBaseUrl();
   }
@@ -39,21 +42,20 @@ class sgBaseComponent
   */
   public function render($template = NULL)
   {
-    try {
-      if ($template) {
-        $this->loadTemplate($template);
-      }
-      else if (isset($this->matchedRoute['template'])) {
-        $this->loadTemplate($this->matchedRoute['template']);
-      }
-      else {
-        $this->loadTemplate($this->matchedRoute['name']);
-      }
+    if (is_null($template))
+    {
+      $template = '_' . $this->class . '_' . $this->method;
+    }
+    
+    try
+    {
+      $this->loadTemplate($template);
     }
     /*
       FIXME recent changes in twig make it impossible to catch errors and throw a 500 error when debug is turned off
     */
-    catch(Exception $error) {
+    catch(Exception $error)
+    {
       if (sgConfiguration::get('settings', 'debug'))
       {
         return('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
@@ -66,7 +68,7 @@ class sgBaseComponent
   public function loadTemplate($name)
   {
     //set view so that exception can be thrown without setting template_name
-    $this->view->loadTemplate("_$name.html");
+    $this->view->loadTemplate("$name.html");
     $this->template_structure = explode('/', $name);
     $this->template_name = end($this->template_structure);
   }
