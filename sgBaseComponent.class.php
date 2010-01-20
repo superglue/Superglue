@@ -6,18 +6,16 @@
 */
 class sgBaseComponent
 {
-  protected $view;
-  public $args;
   public $base;
   public $class;
   public $method;
+  public $params;
   
-  function __construct($class, $method, $args = array())
+  function __construct($class, $method, $params)
   {
-    $this->view = new sgView();
     $this->class = $class;
     $this->method = $method;
-    $this->args = $args;
+    $this->params = $params;
     $this->base = sgContext::getRelativeBaseUrl();
   }
   
@@ -32,7 +30,6 @@ class sgBaseComponent
       'ajax' => sgContext::isAjaxRequest(),
       'vars' => array('GET' => $_GET, 'POST' => $_POST),
     );
-    array_merge($templateVars, $this->args);
     
     return $templateVars;
   }
@@ -62,13 +59,13 @@ class sgBaseComponent
       }
     }
     
-    return $this->view->render($this->getTemplateVars());
+    return sgView::getInstance()->render($this->getTemplateVars());
   }
   
   public function loadTemplate($name)
   {
     //set view so that exception can be thrown without setting template_name
-    $this->view->loadTemplate("$name.html");
+    sgView::getInstance()->loadTemplate("$name.html");
     $this->template_structure = explode('/', $name);
     $this->template_name = end($this->template_structure);
   }

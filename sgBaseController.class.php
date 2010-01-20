@@ -5,7 +5,6 @@
 */
 class sgBaseController
 {
-  protected $view;
   public $matchedRoute;
   public $matches;
   public $base;
@@ -13,7 +12,6 @@ class sgBaseController
   
   function __construct($matches = array())
   {
-    $this->view = new sgView();
     $this->matches = $matches;
     $this->matchedRoute = sgContext::getCurrentRoute();
     $this->base = sgContext::getRelativeBaseUrl();
@@ -29,7 +27,6 @@ class sgBaseController
   public function getTemplateVars()
   {
     $templateVars = get_object_vars($this);
-    unset($templateVars['view']);
     $templateVars['context'] = sgContext::getInstance();
     $templateVars['request'] = array(
       'uri' => $_SERVER['REQUEST_URI'],
@@ -94,14 +91,14 @@ class sgBaseController
     try
     {
       $this->loadTemplate($httpErrorCode);
-      return $this->view->render($this->getTemplateVars());
+      return sgView::getInstance()->render($this->getTemplateVars());
     }
     catch (Exception $error)
     {
       // if the error is in the overridden 500 template, just display the core 500 template
       if ($httpErrorCode == 500)
       {
-        $this->view->getTwig()->getLoader()->setPaths(end($this->view->getTwig()->getLoader()->getPaths()));
+        sgView::getInstance()->getTwig()->getLoader()->setPaths(end(sgView::getInstance()->getTwig()->getLoader()->getPaths()));
       }
       $this->throwErrorCode(500);
     }
@@ -140,13 +137,13 @@ class sgBaseController
       sgGlue::$cachedRoutes["$method $path"]['template'] = str_replace('.html', '', $this->view->getView()->getName());
     }
     
-    return $this->view->render($this->getTemplateVars());
+    return sgView::getInstance()->render($this->getTemplateVars());
   }
   
   public function loadTemplate($name)
   {
     //set view so that exception can be thrown without setting template_name
-    $this->view->loadTemplate($name . '.html');
+    sgView::getInstance()->loadTemplate($name . '.html');
     $this->template_structure = explode('/', $name);
     $this->template_name = end($this->template_structure);
   }
