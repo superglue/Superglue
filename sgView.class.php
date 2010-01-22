@@ -23,13 +23,18 @@ class sgView
       'auto_reload' => !sgConfiguration::get('settings', 'cache_templates'),  // TODO maybe this should instead dictate the cache setting
     ));
     
-    foreach (sgAutoloader::getPaths() as $class => $path)
+    foreach (sgConfiguration::get('settings', 'enabled_twig_extensions') as $extension)
     {
-      if (strpos($class, 'Twig_Extension') === 0)
-      {
-        $this->twig->addExtension(new $class());
-      }
+      $this->twig->addExtension(new $extension());
     }
+    
+    // foreach (sgAutoloader::getPaths() as $class => $path)
+    // {
+    //   if (strpos($class, 'Twig_Extension') === 0)
+    //   {
+    //     $this->twig->addExtension(new $class());
+    //   }
+    // }
   }
   
   public static function getInstance()
@@ -54,7 +59,10 @@ class sgView
       $enabledPlugins = sgConfiguration::get('settings', 'enabled_plugins', array());
       foreach ($enabledPlugins as $plugin)
       {
-        $this->templatePaths[] = sgConfiguration::getRootDir() . "/plugins/$plugin/views";
+        if (is_dir(sgConfiguration::getRootDir() . "/plugins/$plugin/views"))
+        {
+          $this->templatePaths[] = sgConfiguration::getRootDir() . "/plugins/$plugin/views";
+        }
       }
       $this->templatePaths[] = dirname(__FILE__) . '/views';
     }
