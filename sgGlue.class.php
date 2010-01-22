@@ -82,12 +82,12 @@ class sgGlue {
           }
           else
           {
-            throw new BadMethodCallException("Method, $method, not supported.");
+            throw new BadMethodCallException("Method, $method, not supported");
           }
         }
         else
         {
-          throw new Exception("Class, $class, not found.");
+          throw new Exception('Class, ' . $route['class'] . ', not found');
         }
       }
       else
