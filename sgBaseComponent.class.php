@@ -57,6 +57,8 @@ class sgBaseComponent
       {
         return('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
       }
+      
+      return '';
     }
     
     return sgView::getInstance()->render($this->getTemplateVars());
