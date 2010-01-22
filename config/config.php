@@ -14,4 +14,5 @@ return array(
     dirname(__FILE__) . '/../skeleton', 
     dirname(__FILE__) . '/../config'
   ),
+  'enabled_plugins' => array('Components'),
 );
