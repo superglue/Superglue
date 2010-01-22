@@ -13,21 +13,19 @@ class sgConfiguration
     sgContext::getInstance()->setRootDir(self::getRootDir());
     
     self::loadConfig('settings', dirname(__FILE__) . '/config/config.php');
-    self::loadConfig('settings', sgContext::getInstance()->getRootDir() . '/config/config.php');
-    
-    self::$enabledPlugins = self::get('settings', 'enabled_plugins', array());
-    foreach (self::$enabledPlugins as $plugin)
+    self::_initPlugins(dirname(__FILE__), self::get('settings', 'enabled_plugins'));   //init core plugins
+    $projectConfig = include realpath(sgContext::getInstance()->getRootDir() . '/config/config.php');
+    if ($projectConfig && isset($projectConfig['enabled_plugins']))
     {
-      self::loadConfig('settings', sgContext::getInstance()->getRootDir() . "/plugins/$plugin/config/config.php", true);
-      self::loadConfig('routing', sgContext::getInstance()->getRootDir() . "/plugins/$plugin/config/routing.php", true);
+      self::_initPlugins(sgContext::getInstance()->getRootDir(), $projectConfig['enabled_plugins']);   //init project plugins
     }
-    
+    self::loadConfigFromArray('settings', $projectConfig);
+    self::$enabledPlugins = self::get('settings', 'enabled_plugins', array()); //reload plugins to make sure we catch the project defined plugins
     self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
-    
     self::_initAutoloader();
-    self::initPluginConfigurations();
+    self::_initPluginConfigurations();
     $this->init();
-    
+
     return;
   }
   
@@ -80,18 +78,17 @@ class sgConfiguration
   public static function loadConfig($configType, $path, $checkFileExists = false)
   {
     $path = realpath($path);
-    if ($checkFileExists && !file_exists($path))
+    if ($checkFileExists && !file_exists($path))  // TODO This probably doesn't matter now, since I am using include
     {
       return false;
     }
     
-    $loadedConfig = require_once $path;
+    $loadedConfig = include $path;
     if (is_array($loadedConfig))
     {
       if (!empty($loadedConfig))
       {
-        $config = array($configType => $loadedConfig);
-        self::$config = self::array_merge_recursive_distinct(self::$config, $config);
+        self::loadConfigFromArray($configType, $loadedConfig);
       }
     }
     else
@@ -100,7 +97,27 @@ class sgConfiguration
     }
   }
   
-  private static function initPluginConfigurations()
+  public static function loadConfigFromArray($configType, array $config)
+  {
+    $newConfig = array($configType => $config);
+    self::$config = self::array_merge_recursive_distinct(self::$config, $newConfig);
+  }
+  
+  /*
+    TODO This method is terrible. Figure out a better way to handle it!
+  */
+  private static function _initPlugins($dir, array $plugins)
+  {
+    //$pendingPlugins = array_diff_assoc(self::get('settings', 'enabled_plugins', array()), self::$enabledPlugins);
+    foreach ($plugins as $plugin)
+    {
+      self::loadConfig('settings', "$dir/plugins/$plugin/config/config.php", true);
+      self::loadConfig('routing', "$dir/plugins/$plugin/config/routing.php", true);
+    }
+    self::$enabledPlugins = self::get('settings', 'enabled_plugins', array());
+  }
+  
+  private static function _initPluginConfigurations()
   {
     $paths = sgAutoloader::getPaths();
     foreach (self::$enabledPlugins as $plugin)
