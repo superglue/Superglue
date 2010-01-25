@@ -30,6 +30,8 @@
  */
 class sgGlue {
   static public $cachedRoutes = null;
+  static public $allowedMethods = array('GET', 'POST', 'PUT', 'DELETE');
+  
   
   static public function checkRouteCache($path, $method)
   {
@@ -106,7 +108,12 @@ class sgGlue {
   
   static function stick($routes)
   {
-    $method = strtoupper($_SERVER['REQUEST_METHOD']);
+    $method = isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) : strtoupper($_SERVER['REQUEST_METHOD']);
+    if (!in_array($method, self::$allowedMethods))
+    {
+      throw new BadMethodCallException("Method, $method, not supported");
+      exit();
+    }
     $path = sgContext::getCurrentPath();
     $matchedRoute = null;
     
