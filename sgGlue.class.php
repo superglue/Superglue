@@ -19,11 +19,6 @@
  *   '/page/(\d+) => 'page'
  * );
  *
- * class page {
- *    function GET($matches) {
- *      echo "Your requested page " . $matches[1];
- *    }
- * }
  *
  * Glue::stick($urls);
  *
