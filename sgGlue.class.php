@@ -29,11 +29,11 @@
  *
  */
 class sgGlue {
-  static public $cachedRoutes = null;
-  static public $allowedMethods = array('GET', 'POST', 'PUT', 'DELETE');
+  public static $cachedRoutes = null;
+  public static $allowedMethods = array('GET', 'POST', 'PUT', 'DELETE');
   
   
-  static public function checkRouteCache($path, $method)
+  public static function checkRouteCache($path, $method)
   {
     if (self::getCachedRoutes() && isset(self::$cachedRoutes["$method $path"]))
     {
@@ -43,7 +43,7 @@ class sgGlue {
     return false;
   }
   
-  static public function getCachedRoutes()
+  public static function getCachedRoutes()
   {
     if (!is_null(self::$cachedRoutes)) {
       return self::$cachedRoutes;
@@ -59,7 +59,7 @@ class sgGlue {
     return false;
   }
   
-  static public function dispatch($route, $method, $matches)
+  public static function dispatch($route, $method, $matches)
   {
     sgContext::setCurrentRoute($route);
     if (isset($route['disabled']) && $route['disabled'] == true)
@@ -100,13 +100,13 @@ class sgGlue {
     }
   }
   
-  static public function saveCachedRoutes()
+  public static function saveCachedRoutes()
   {
     $data = serialize(self::$cachedRoutes);
     file_put_contents(sgConfiguration::get('settings', 'cache_dir') . '/sgRouteCache.cache', $data);
   }
   
-  static function stick($routes)
+  public static function stick($routes)
   {
     $method = isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) : strtoupper($_SERVER['REQUEST_METHOD']);
     if (!in_array($method, self::$allowedMethods))
