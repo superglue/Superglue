@@ -14,14 +14,21 @@ class sgConfiguration
     
     self::loadConfig('settings', dirname(__FILE__) . '/config/config.php');
     self::_initPlugins(dirname(__FILE__), self::get('settings', 'enabled_plugins'));   //init core plugins
-    $projectConfig = include realpath(sgContext::getInstance()->getRootDir() . '/config/config.php');
-    if ($projectConfig && isset($projectConfig['enabled_plugins']))
+    $projectConfig = null;
+    if (file_exists(realpath(sgContext::getInstance()->getRootDir() . '/config/config.php')))
     {
-      self::_initPlugins(sgContext::getInstance()->getRootDir(), $projectConfig['enabled_plugins']);   //init project plugins
+      $projectConfig = include realpath(sgContext::getInstance()->getRootDir() . '/config/config.php');
+      if (isset($projectConfig['enabled_plugins']))
+      {
+        self::_initPlugins(sgContext::getInstance()->getRootDir(), $projectConfig['enabled_plugins']);   //init project plugins
+      }
+      self::loadConfigFromArray('settings', $projectConfig);
     }
-    self::loadConfigFromArray('settings', $projectConfig);
     self::$enabledPlugins = self::get('settings', 'enabled_plugins', array()); //reload plugins to make sure we catch the project defined plugins
-    self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
+    if (file_exists(realpath(sgContext::getInstance()->getRootDir() . '/config/routing.php')))
+    {
+      self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
+    }
     self::_initAutoloader();
     self::_initPluginConfigurations();
     $this->init();
@@ -38,7 +45,14 @@ class sgConfiguration
   
   public static function getRootDir()
   {
-    $r = new ReflectionClass('ProjectConfiguration');
+    try
+    {
+      $r = new ReflectionClass('ProjectConfiguration');
+    }
+    catch (Exception $e)
+    {
+      return getcwd();
+    }
     return realpath(dirname($r->getFileName()) . '/..');
   }
 
@@ -70,7 +84,15 @@ class sgConfiguration
       /*
         TODO figure out a better way to do this (LSB in 5.3 maybe)
       */
-      self::$instance = new ProjectConfiguration();
+      if (class_exists('ProjectConfiguration'))
+      {
+        self::$instance = new ProjectConfiguration();
+      }
+      else
+      {
+         $c = __CLASS__;
+         self::$instance = new $c;
+      }
     }
     return self::$instance;
   }
@@ -108,7 +130,6 @@ class sgConfiguration
   */
   private static function _initPlugins($dir, array $plugins)
   {
-    //$pendingPlugins = array_diff_assoc(self::get('settings', 'enabled_plugins', array()), self::$enabledPlugins);
     foreach ($plugins as $plugin)
     {
       self::loadConfig('settings', "$dir/plugins/$plugin/config/config.php", true);

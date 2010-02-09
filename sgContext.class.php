@@ -70,6 +70,6 @@ class sgContext
   
   public function __clone()
   {
-      trigger_error('Only one instance of a singleton is allowed.', E_USER_ERROR);
+    trigger_error('Only one instance of a singleton is allowed.', E_USER_ERROR);
   }
 }
