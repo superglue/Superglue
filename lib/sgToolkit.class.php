@@ -35,22 +35,22 @@ class sgToolkit
       {
         if(@!rmdir($file))
         {
-          sgCLI::printAction('remove dir', sgCLI::formatText($file, sgCLI::STYLE_ERROR));
+          sgCLI::printAction('-dir ', sgCLI::formatText($file, sgCLI::STYLE_ERROR));
         }
         else
         {
-          sgCLI::printAction('remove dir', $file);
+          sgCLI::printAction('-dir ', $file);
         }
       }
       else
       {
         if (@!unlink($file))
         {
-          sgCLI::printAction('remove file', sgCLI::formatText($file, sgCLI::STYLE_ERROR));
+          sgCLI::printAction('-file', sgCLI::formatText($file, sgCLI::STYLE_ERROR));
         }
         else
         {
-          sgCLI::printAction('remove file', $file);
+          sgCLI::printAction('-file', $file);
         }
       }
     }
@@ -64,21 +64,21 @@ class sgToolkit
     }
     foreach ($files as $file)
     {
-      //mkdir($file, $mode);
-      sgCLI::printAction('mkdir', $file);
+      mkdir($file, $mode);
+      sgCLI::printAction('+dir ', $file);
     }
   }
   
   public static function copy($source, $target)
   {
-    //copy($source, $destination);
-    sgCLI::printAction('create', $target);
+    copy($source, $destination);
+    sgCLI::printAction('+file', $target);
   }
   
   public static function symlink($source, $target)
   {
-    //symlink($source, $destination);
-    sgCLI::printAction('link', $target);
+    symlink($source, $destination);
+    sgCLI::printAction('+link', $target);
   }
   
   public function getFiles($path, &$data = array())
