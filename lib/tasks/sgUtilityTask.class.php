@@ -44,8 +44,7 @@ class sgUtilityTask extends sgTask
   public function executeCoreInitProject($arguments, $options)
   {
     $targetDir = realpath($_SERVER['PWD']);
-    $scriptDir = realpath(dirname(__FILE__));
-    
+    $scriptDir = realpath(dirname(__FILE__) . '/../../');
     if (file_exists($targetDir . '/superglue'))
     {
       sgCLI::error('A project already exists in this directory.');
@@ -68,15 +67,15 @@ class sgUtilityTask extends sgTask
       sgToolkit::copy($scriptDir . '/skeleton/config/config.php-dist', $targetDir . '/config/config.php');
       sgToolkit::copy($scriptDir . '/skeleton/config/routing.php-dist', $targetDir . '/config/routing.php');
       sgToolkit::copy($scriptDir . '/skeleton/views/index.html', $targetDir . '/views/index.html');
-      if (sgToolkit::checkFileLocation(realpath(__FILE__), $targetDir))
+      if (sgToolkit::checkFileLocation($scriptDir, $targetDir))
       {
-        sgToolkit::symlink($this->relPath(realpath(__FILE__), $targetDir), $targetDir . '/superglue');
+        sgToolkit::symlink($this->relPath($scriptDir, $targetDir), $targetDir . '/superglue');
       }
       else
       {
         sgToolkit::mkdir($targetDir . '/lib', 0755);
-        sgToolkit::symlink(realpath(dirname(__FILE__)), $targetDir . '/lib/superglue');
-        sgToolkit::symlink(realpath(__FILE__), $targetDir . '/superglue');
+        sgToolkit::symlink($scriptDir, $targetDir . '/lib/superglue');
+        sgToolkit::symlink($scriptDir, $targetDir . '/superglue');
       }
       sgToolkit::chmod($targetDir . '/superglue', 0755);
       sgCLI::println('Done.', sgCLI::STYLE_INFO);
