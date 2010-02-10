@@ -21,6 +21,15 @@ class sgPluginTask extends sgTask
     );
   }
   
+  public function executePluginListEnabled($arguments, $options)
+  {
+    $plugins = sgConfiguration::getInstance()->getPlugins();
+    foreach ($plugins as $plugin)
+    {
+      sgCLI::println($plugin, sgCLI::STYLE_INFO);
+    }
+  }
+  
   public function executePluginInstall($arguments, $options)
   {
     $this->pluginOp($arguments['pluginName'], 'install', 'installing');

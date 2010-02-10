@@ -125,6 +125,11 @@ class sgConfiguration
     self::$config = self::array_merge_recursive_distinct(self::$config, $newConfig);
   }
   
+  public function getPlugins()
+  {
+    return self::$enabledPlugins;
+  }
+  
   /*
     TODO This method is terrible. Figure out a better way to handle it!
   */
