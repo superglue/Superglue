@@ -89,9 +89,6 @@ class sgUtilityTask extends sgTask
     {
       $path = realpath(sgContext::getInstance()->getRootDir() . '/cache/');
       $files = sgToolkit::getFiles($path);
-      foreach ($files as $file) {
-        sgCLI::println($file);
-      }
       sgToolkit::remove($files);
     }
   }

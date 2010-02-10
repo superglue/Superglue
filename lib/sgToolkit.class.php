@@ -81,7 +81,7 @@ class sgToolkit
     sgCLI::printAction('+link', $target);
   }
   
-  public function getFiles($path, &$data = array())
+  public static function getFiles($path, &$data = array())
   {
     $files = new RecursiveDirectoryIterator($path);
     foreach ($files as $file)
@@ -89,7 +89,7 @@ class sgToolkit
       array_unshift($data, $file->getPathname());
       if ($file->isDir() && !$file->isLink())
       {
-        $this->getFiles($file->getPathname(), $data);
+        self::getFiles($file->getPathname(), $data);
       }
     }
     
