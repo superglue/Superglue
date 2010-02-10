@@ -47,10 +47,13 @@ class sgPluginTask extends sgTask
     {
       if (method_exists($pluginConfigClass, $op))
       {
-        sgCLI::println(ucwords($actionString) . " Plugin \"$plugin\":", sgCLI::STYLE_HEADER);
-        call_user_func(array($pluginConfigClass, 'init'));
-        call_user_func(array($pluginConfigClass, $op));
-        sgClI::println('Done.', sgCLI::STYLE_INFO);
+        if (sgCLI::confirm("Are you sure you want to $op the plugin \"$plugin\"?"))
+        {
+          sgCLI::println(ucwords($actionString) . " Plugin \"$plugin\":", sgCLI::STYLE_HEADER);
+          call_user_func(array($pluginConfigClass, 'init'));
+          call_user_func(array($pluginConfigClass, $op));
+          sgClI::println('Done.', sgCLI::STYLE_INFO);
+        }
       }
       else
       {

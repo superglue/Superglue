@@ -84,12 +84,9 @@ class sgUtilityTask extends sgTask
   
   public function executeCoreClearCache($arguments, $options)
   {
-    if (sgCLI::confirm('Really clear cache?'))
-    {
-      $path = realpath(sgContext::getInstance()->getRootDir() . '/cache/');
-      $files = sgToolkit::getFiles($path);
-      sgToolkit::remove($files);
-    }
+    $path = realpath(sgContext::getInstance()->getRootDir() . '/cache/');
+    $files = sgToolkit::getFiles($path);
+    sgToolkit::remove($files);
   }
   
   public function executeCoreFixPerms($arguments, $options)
