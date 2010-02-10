@@ -18,7 +18,9 @@ class sgToolkit
     }
     foreach ($files as $file)
     {
+      $oldUmask = umask(0000);
       chmod($file, $mode);
+      umask($oldUmask);
       sgCLI::printAction(sprintf('chmod %o', $mode), $file);
     }
   }
@@ -35,11 +37,11 @@ class sgToolkit
       {
         if(@!rmdir($file))
         {
-          sgCLI::printAction('-dir ', sgCLI::formatText($file, sgCLI::STYLE_ERROR));
+          sgCLI::printAction('-dir', sgCLI::formatText($file, sgCLI::STYLE_ERROR));
         }
         else
         {
-          sgCLI::printAction('-dir ', $file);
+          sgCLI::printAction('-dir', $file);
         }
       }
       else
@@ -56,7 +58,7 @@ class sgToolkit
     }
   }
   
-  public static function mkdir($files = array(), $mode = 0755)
+  public static function mkdir($files = array(), $mode = 0755, $recursive = true)
   {
     if (is_string($files))
     {
@@ -64,21 +66,27 @@ class sgToolkit
     }
     foreach ($files as $file)
     {
-      mkdir($file, $mode);
-      sgCLI::printAction('+dir ', $file);
+      if (is_dir($file))
+      {
+        continue;
+      }
+      $oldUmask = umask(0000);
+      mkdir($file, $mode, $recursive);
+      umask($oldUmask);
+      sgCLI::printAction('+dir', $file);
     }
   }
   
-  public static function copy($source, $target)
+  public static function copy($source, $destination)
   {
     copy($source, $destination);
-    sgCLI::printAction('+file', $target);
+    sgCLI::printAction('+file', $destination);
   }
   
-  public static function symlink($source, $target)
+  public static function symlink($source, $destination)
   {
     symlink($source, $destination);
-    sgCLI::printAction('+link', $target);
+    sgCLI::printAction('+link', $destination);
   }
   
   public static function getFiles($path, &$data = array())
