@@ -18,8 +18,7 @@ class sgCLI
   protected $aliases = array();
   
   protected static 
-    $newline = "\r\n",
-    $blankline = "\r\n\r\n",
+    $newline = PHP_EOL,
     $ansiCodes = array(
       'fg' => array(
         'black' => '30', 'red' => '31', 'green' => '32', 'yellow' => '33',
@@ -212,7 +211,8 @@ class sgCLI
   
   public static function printAction($action, $line)
   {
-    $line = sgCLI::println(sgCLI::formatText($action . ' ', sgCLI::STYLE_INFO) . $line);
+    $width = 9 + strlen(sgCLI::formatText('', sgCLI::STYLE_INFO));
+    $line = sgCLI::println(sprintf("%-${width}s %s", sgCLI::formatText($action, sgCLI::STYLE_INFO), $line));
   }
   
   public static function printBlock($text, $style = null)
@@ -247,7 +247,6 @@ class sgCLI
   
   public static function shutdown($statusCode = 0)
   {
-    //fputs(STDOUT, self::$blankline);
     exit($statusCode);
   }
 }
