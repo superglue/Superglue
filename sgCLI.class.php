@@ -245,6 +245,12 @@ class sgCLI
     self::println($blank, $style);
   }
   
+  public static function handleException($exception)
+  {
+    sgCLI::error($exception->getMessage());
+    sgCLI::println($exception);
+  }
+  
   public static function shutdown($statusCode = 0)
   {
     exit($statusCode);
