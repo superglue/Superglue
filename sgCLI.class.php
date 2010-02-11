@@ -212,7 +212,7 @@ class sgCLI
   public static function printAction($action, $line)
   {
     $width = 9 + strlen(sgCLI::formatText('', sgCLI::STYLE_INFO));
-    $line = sgCLI::println(sprintf("%-${width}s %s", sgCLI::formatText($action, sgCLI::STYLE_INFO), $line));
+    sgCLI::println(sprintf("%-${width}s %s", sgCLI::formatText($action, sgCLI::STYLE_INFO), $line));
   }
   
   public static function printBlock($text, $style = null)

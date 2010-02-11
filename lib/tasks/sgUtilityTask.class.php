@@ -22,21 +22,24 @@ class sgUtilityTask extends sgTask
     $tasks = sgCLI::getInstance()->getTasks();
     sgCLI::println('Available commands:', sgCLI::STYLE_HEADER);
     sgCLI::println();
+    
+    $max = 0;
+    foreach ($tasks as $taskList)
+    {
+      $current = strlen(max(array_keys($taskList)));
+      if ($current > $max)
+      {
+        $max = $current;
+      }
+    }
+    
     foreach ($tasks as $namespace => $taskList)
     {
       sgCLI::println($namespace . ':', sgCLI::STYLE_INFO);
-      $col = 0;
       foreach ($taskList as $command => $task)
       {
-        if (strlen($command) > $col)
-        {
-          $col = strlen($command) + 4;
-        }
-      }
-      foreach ($taskList as $command => $task)
-      {
-        $line = sgCLI::formatText("  $command", sgCLI::STYLE_INFO);
-        sgCLI::println($line . str_repeat(' ', $col - strlen($command)) . $task['description']);
+        $width = $max + strlen(sgCLI::formatText('', sgCLI::STYLE_INFO)) + 4;
+        sgCLI::println(sprintf("  %-${width}s %s", sgCLI::formatText($command, sgCLI::STYLE_INFO), $task['description']));
       }
     }
   }
