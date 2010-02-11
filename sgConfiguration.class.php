@@ -1,5 +1,10 @@
 <?php
+
+/*
+  TODO Bring these in with the autoloader
+*/
 require(dirname(__FILE__) . '/sgContext.class.php');
+require(dirname(__FILE__) . '/lib/sgToolkit.class.php');
 require(dirname(__FILE__) . '/vendor/Twig/lib/Twig/Autoloader.php');
 
 class sgConfiguration
@@ -99,6 +104,20 @@ class sgConfiguration
   
   public static function loadConfig($configType, $path, $checkFileExists = false)
   {
+    $loadedConfig = self::loadConfigFile($path, $checkFileExists);
+
+    if ($loadedConfig)
+    {
+      self::loadConfigFromArray($configType, $loadedConfig);
+    }
+    else
+    {
+      return false;
+    }
+  }
+  
+  public static function loadConfigFile($path, $checkFileExists = false)
+  {
     $path = realpath($path);
     if ($checkFileExists && !file_exists($path))  // TODO This probably doesn't matter now, since I am using include
     {
@@ -106,23 +125,18 @@ class sgConfiguration
     }
     
     $loadedConfig = include $path;
-    if (is_array($loadedConfig))
-    {
-      if (!empty($loadedConfig))
-      {
-        self::loadConfigFromArray($configType, $loadedConfig);
-      }
-    }
-    else
+    if (!is_array($loadedConfig) || empty($loadedConfig))
     {
       throw new Exception('Configuration file "' . $path . '" does not return an array.');
     }
+    
+    return $loadedConfig;
   }
   
   public static function loadConfigFromArray($configType, array $config)
   {
     $newConfig = array($configType => $config);
-    self::$config = self::array_merge_recursive_distinct(self::$config, $newConfig);
+    self::$config = sgToolkit::arrayMergeRecursiveDistinct(self::$config, $newConfig);
   }
   
   public function getPlugins()
@@ -135,10 +149,20 @@ class sgConfiguration
   */
   private static function _initPlugins($dir, array $plugins)
   {
-    foreach ($plugins as $plugin)
+    $names = $plugins;
+    array_walk($plugins, create_function('&$plugin, $key, $dir', '$plugin = "$dir/plugins/$plugin";'), $dir);
+    $plugins = array_combine($names, $plugins);
+    sgAutoloader::loadPaths($plugins);
+    foreach ($plugins as $name => $path)
     {
-      self::loadConfig('settings', "$dir/plugins/$plugin/config/config.php", true);
-      self::loadConfig('routing', "$dir/plugins/$plugin/config/routing.php", true);
+      $class = "{$name}Configuration";
+      if (class_exists($class))
+      {
+        //php 5.3 allows $class::init(), but I still want 5.2.x support
+        call_user_func(array($class, 'preConfig'));
+      }
+      self::loadConfig('settings', "$path/config/config.php", true);
+      self::loadConfig('routing', "$path/config/routing.php", true);
     }
     self::$enabledPlugins = self::get('settings', 'enabled_plugins', array());
   }
@@ -155,31 +179,6 @@ class sgConfiguration
         call_user_func(array($class, 'init'));
       }
     }
-  }
-  
-  
-  // modified from http://us.php.net/manual/en/function.array-merge-recursive.php#92195
-  private static function array_merge_recursive_distinct(array &$array1, array &$array2)
-  {
-    $merged = $array1;
-    
-    foreach ($array2 as $key => &$value)
-    {
-      if (is_int($key))
-      {
-        $merged[] = $value;
-      }
-      else if (is_array($value) && !empty($value) && isset($merged[$key]) && is_array($merged[$key]))
-      {
-        $merged[$key] = self::array_merge_recursive_distinct($merged[$key], $value);
-      }
-      else
-      {
-        $merged[$key] = $value;
-      }
-    }
-    
-    return $merged;
   }
   
   public static function set($configType, $setting, $value)

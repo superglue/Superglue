@@ -120,4 +120,28 @@ class sgToolkit
     }
     return $source;
   }
+  
+  // modified from http://us.php.net/manual/en/function.array-merge-recursive.php#92195
+  public static function arrayMergeRecursiveDistinct(array &$array1, array &$array2)
+  {
+    $merged = $array1;
+    
+    foreach ($array2 as $key => &$value)
+    {
+      if (is_int($key))
+      {
+        $merged[] = $value;
+      }
+      else if (is_array($value) && !empty($value) && isset($merged[$key]) && is_array($merged[$key]))
+      {
+        $merged[$key] = self::arrayMergeRecursiveDistinct($merged[$key], $value);
+      }
+      else
+      {
+        $merged[$key] = $value;
+      }
+    }
+    
+    return $merged;
+  }
 }
