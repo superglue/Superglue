@@ -162,26 +162,57 @@ class sgCLI
     fputs(STDOUT, $text . self::$newline);
   }
   
-  public static function formatText($text, $style)
+  public static function formatText($text, $style, $previousStyle = null, $closeStyle = true)
   {
+    $refStyle = array();
     $activeCodes = array();
-    if (isset(self::$styles[$style]['options']))
+    
+    if (is_array($style))
     {
-      foreach (self::$styles[$style]['options'] as $option)
+      $refStyle = $style;
+    }
+    else
+    {
+      if (!isset(self::$styles[$style]))
+      {
+        return $text;
+      }
+      $refStyle = self::$styles[$style];
+    }
+    
+    if (isset($refStyle['options']))
+    {
+      foreach ($refStyle['options'] as $option)
       {
         $activeCodes[] = self::$ansiCodes['options'][$option];
       }
     }
-    if (isset(self::$styles[$style]['bg']))
+    if (isset($refStyle['bg']))
     {
-      $activeCodes[] = self::$ansiCodes['bg'][self::$styles[$style]['bg']];
+      $activeCodes[] = self::$ansiCodes['bg'][$refStyle['bg']];
     }
-    if (isset(self::$styles[$style]['fg']))
+    if (isset($refStyle['fg']))
     {
-      $activeCodes[] = self::$ansiCodes['fg'][self::$styles[$style]['fg']];
+      $activeCodes[] = self::$ansiCodes['fg'][$refStyle['fg']];
     }
     
-    return "\033[" . implode(';', $activeCodes) . 'm' . $text . "\033[0m";
+    $output = "\033[" . implode(';', $activeCodes) . 'm' . $text;
+    if ($previousStyle)
+    {
+     $output .= "\033[0m" . self::formatText('', $previousStyle, null, false);
+    }
+    if ($closeStyle)
+    {
+     $output .= "\033[0m";
+    }
+    
+    return $output;
+  }
+  
+  public static function strlen($text)
+  {
+    $text = preg_replace("/\033.*?\m/", '', $text);
+    return strlen($text);
   }
   
   public static function error($text)
@@ -226,9 +257,10 @@ class sgCLI
     
     foreach ($text as $line)
     {
-      if (strlen($line) > $width)
+      $len = sgCLI::strlen($line);
+      if ($len > $width)
       {
-        $width = strlen($line);
+        $width = $len;
       }
     }
     $blank = str_repeat(' ', $width + 4);
@@ -236,13 +268,19 @@ class sgCLI
     foreach ($text as $line)
     {
       $spaces = '';
-      if (strlen($line) < $width)
+      $len = sgCLI::strlen($line);
+      if ($len < $width)
       {
-        $spaces = str_repeat(' ', $width - strlen($line));
+        $spaces = str_repeat(' ', $width - $len);
       }
       self::println("  $line$spaces  ", $style);
     }
     self::println($blank, $style);
+  }
+  
+  public static function getAnsiCodes()
+  {
+    return self::$ansiCodes;
   }
   
   public static function handleException($exception)

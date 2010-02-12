@@ -139,9 +139,27 @@ class sgConfiguration
     self::$config = sgToolkit::arrayMergeRecursiveDistinct(self::$config, $newConfig);
   }
   
-  public function getPlugins()
+  public static function getPlugins()
   {
     return self::$enabledPlugins;
+  }
+  
+  public static function executePluginHook($plugins, $hook)
+  {
+    if (!is_array($plugins))
+    {
+      $plugins = array($plugins);
+    }
+    
+    foreach ($plugins as $plugin)
+    {
+      $class = "{$plugin}Configuration";
+      if (method_exists($class, $hook))
+      {
+        //php 5.3 allows $class::init(), but I still want 5.2.x support
+        call_user_func(array($class, $hook));
+      }
+    }
   }
   
   /*
@@ -153,32 +171,23 @@ class sgConfiguration
     array_walk($plugins, create_function('&$plugin, $key, $dir', '$plugin = "$dir/plugins/$plugin";'), $dir);
     $plugins = array_combine($names, $plugins);
     sgAutoloader::loadPaths($plugins);
+    
+    self::executePluginHook(array_keys($plugins), 'preConfig');
+    
     foreach ($plugins as $name => $path)
     {
-      $class = "{$name}Configuration";
-      if (class_exists($class))
-      {
-        //php 5.3 allows $class::init(), but I still want 5.2.x support
-        call_user_func(array($class, 'preConfig'));
-      }
       self::loadConfig('settings', "$path/config/config.php", true);
       self::loadConfig('routing', "$path/config/routing.php", true);
     }
     self::$enabledPlugins = self::get('settings', 'enabled_plugins', array());
+
+    self::executePluginHook(array_keys($plugins), 'postConfig');
   }
   
   private static function _initPluginConfigurations()
   {
-    $paths = sgAutoloader::getPaths();
-    foreach (self::$enabledPlugins as $plugin)
-    {
-      $class = "{$plugin}Configuration";
-      if (isset($paths[$class]))
-      {
-        //php 5.3 allows $class::init(), but I still want 5.2.x support
-        call_user_func(array($class, 'init'));
-      }
-    }
+    $plugins = self::getPlugins();
+    self::executePluginHook($plugins, 'init');
   }
   
   public static function set($configType, $setting, $value)

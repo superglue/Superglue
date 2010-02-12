@@ -42,27 +42,20 @@ class sgPluginTask extends sgTask
   
   private function pluginOp($plugin, $op, $actionString)
   {
-    $pluginConfigClass = $plugin . 'Configuration';
-    if (class_exists($pluginConfigClass))
+    $pluginConfigClass = "{$plugin}Configuration";
+    if (method_exists($pluginConfigClass, $op))
     {
-      if (method_exists($pluginConfigClass, $op))
+      $opString = sgCLI::formatText($op, array('options' => array('bright', 'underscore')), sgCLI::STYLE_CONFIRM, false);
+      if (sgCLI::confirm("Are you sure you want to $opString the plugin \"$plugin\"?"))
       {
-        if (sgCLI::confirm("Are you sure you want to $op the plugin \"$plugin\"?"))
-        {
-          sgCLI::println(ucwords($actionString) . " Plugin \"$plugin\":", sgCLI::STYLE_HEADER);
-          call_user_func(array($pluginConfigClass, 'init'));
-          call_user_func(array($pluginConfigClass, $op));
-          sgClI::println('Done.', sgCLI::STYLE_INFO);
-        }
-      }
-      else
-      {
-        sgClI::println("Nothing to $op.", sgCLI::STYLE_INFO);
+        sgCLI::println(ucwords($actionString) . " Plugin \"$plugin\":", sgCLI::STYLE_HEADER);
+        sgConfiguration::executePluginHook($plugin, $op);
+        sgClI::println('Done.', sgCLI::STYLE_INFO);
       }
     }
     else
     {
-      sgCLI::error('Plugin $plugin does not exist.');
+      sgClI::println("Nothing to $op.", sgCLI::STYLE_INFO);
     }
   }
 }
