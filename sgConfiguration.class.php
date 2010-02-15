@@ -29,8 +29,6 @@ class sgConfiguration
       }
       self::loadConfigFromArray('settings', $projectConfig);
     }
-    //self::$enabledPlugins = array_merge(self::$enabledPlugins, self::get('settings', 'enabled_plugins', array()));
-    //self::$enabledPlugins = self::get('settings', 'enabled_plugins', array()); //reload plugins to make sure we catch the project defined plugins
     if (file_exists(realpath(sgContext::getInstance()->getRootDir() . '/config/routing.php')))
     {
       self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
@@ -38,7 +36,7 @@ class sgConfiguration
     self::_initAutoloader();
     self::_initPluginConfigurations();
     $this->init();
-
+    
     return;
   }
   
