@@ -26,7 +26,7 @@ class sgPluginTask extends sgTask
     $plugins = sgConfiguration::getInstance()->getPlugins();
     foreach ($plugins as $plugin)
     {
-      sgCLI::println($plugin, sgCLI::STYLE_INFO);
+      sgCLI::println($plugin['name'], sgCLI::STYLE_INFO);
     }
   }
   
