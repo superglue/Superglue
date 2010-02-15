@@ -68,6 +68,15 @@ class sgGlue {
     }
     else
     {
+      $plugins = sgConfiguration::getInstance()->getPlugins();
+      foreach ($plugins as $plugin)
+      {
+        if (isset($plugin['configuration']))
+        {
+          sgToolkit::executeMethod($plugin['configuration'], 'preExecute');
+        }
+      }
+      sgToolkit::executeMethod(sgConfiguration::getInstance(), 'preExecute');
       if (isset($route['class']))
       {
         if (class_exists($route['class']))
@@ -75,7 +84,9 @@ class sgGlue {
           $obj = new $route['class']($matches);
           if (method_exists($obj, $method))
           {
+            sgToolkit::executeMethod($obj, 'preExecute');
             print $obj->$method();
+            sgToolkit::executeMethod($obj, 'postExecute');
           }
           else
           {
@@ -90,7 +101,17 @@ class sgGlue {
       else
       {
         $obj = new sgBaseController($matches);
+        sgToolkit::executeMethod($obj, 'preExecute');
         print $obj->$method();
+        sgToolkit::executeMethod($obj, 'postExecute');
+      }
+      sgToolkit::executeMethod(sgConfiguration::getInstance(), 'postExecute');
+      foreach ($plugins as $plugin)
+      {
+        if (isset($plugin['configuration']))
+        {
+          sgToolkit::executeMethod($plugin['configuration'], 'postExecute');
+        }
       }
     }
   }

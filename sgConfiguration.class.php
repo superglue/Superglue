@@ -29,7 +29,8 @@ class sgConfiguration
       }
       self::loadConfigFromArray('settings', $projectConfig);
     }
-    self::$enabledPlugins = self::get('settings', 'enabled_plugins', array()); //reload plugins to make sure we catch the project defined plugins
+    //self::$enabledPlugins = array_merge(self::$enabledPlugins, self::get('settings', 'enabled_plugins', array()));
+    //self::$enabledPlugins = self::get('settings', 'enabled_plugins', array()); //reload plugins to make sure we catch the project defined plugins
     if (file_exists(realpath(sgContext::getInstance()->getRootDir() . '/config/routing.php')))
     {
       self::loadConfig('routing', sgContext::getInstance()->getRootDir() . '/config/routing.php');
@@ -168,20 +169,31 @@ class sgConfiguration
   private static function _initPlugins($dir, array $plugins)
   {
     $names = $plugins;
-    array_walk($plugins, create_function('&$plugin, $key, $dir', '$plugin = "$dir/plugins/$plugin";'), $dir);
+    //self::$enabledPlugins = array_unique(array_merge(self::$enabledPlugins, $plugins));
+    array_walk($plugins, create_function('&$plugin, $key, $dir', '$plugin = array("name" => $plugin, "path" => "$dir/plugins/$plugin");'), $dir);
     $plugins = array_combine($names, $plugins);
-    sgAutoloader::loadPaths($plugins);
+    self::$enabledPlugins = array_merge(self::$enabledPlugins, $plugins);
     
-    self::executePluginHook(array_keys($plugins), 'preConfig');
-    
-    foreach ($plugins as $name => $path)
+    foreach ($plugins as $name => $plugin)
     {
-      self::loadConfig('settings', "$path/config/config.php", true);
-      self::loadConfig('routing', "$path/config/routing.php", true);
+      sgAutoloader::loadPaths(array($plugin['path']));
+      $class = "{$name}Configuration";
+      
+      if (class_exists($class))
+      {
+        $configuration = new $class();
+        sgToolkit::executeMethod($configuration, 'preConfig');
+        self::$enabledPlugins[$name]['configuration'] = $configuration;
+      }
+      
+      self::loadConfig('settings', "{$plugin['path']}/config/config.php", true);
+      self::loadConfig('routing', "{$plugin['path']}/config/routing.php", true);
+      
+      if (isset($configuration))
+      {
+        sgToolkit::executeMethod($configuration, 'postConfig');
+      }
     }
-    self::$enabledPlugins = self::get('settings', 'enabled_plugins', array());
-
-    self::executePluginHook(array_keys($plugins), 'postConfig');
   }
   
   private static function _initPluginConfigurations()

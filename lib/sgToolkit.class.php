@@ -2,6 +2,18 @@
 
 class sgToolkit
 {
+  //if object is an actual object, then the method will be called on that object
+  //if it is a string, then method will be called statically
+  public static function executeMethod($object, $method, $arguments = array())
+  {
+    if (method_exists($object, $method))
+    {
+      return call_user_func_array(array($object, $method), $arguments);
+    }
+    
+    return false;
+  }
+  
   public static function camelCase($string)
   {
     $string = str_replace(' ', '', ucwords(preg_replace('/[^A-Za-z0-9]/', ' ', $string)));
@@ -24,7 +36,19 @@ class sgToolkit
       sgCLI::printAction(sprintf('chmod %o', $mode), $file);
     }
   }
-
+  
+  public static function rmdir($path)
+  {
+    $path = realpath($path);
+    if (!is_dir($path))
+    {
+      return false;
+    }
+    $files = sgToolkit::getFiles($path);
+    $files[] = $path;
+    self::remove($files);
+  }
+  
   public static function remove($files = array())
   {
     if (is_string($files))

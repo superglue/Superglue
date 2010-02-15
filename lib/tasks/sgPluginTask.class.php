@@ -50,7 +50,6 @@ class sgPluginTask extends sgTask
       {
         sgCLI::println(ucwords($actionString) . " Plugin \"$plugin\":", sgCLI::STYLE_HEADER);
         sgConfiguration::executePluginHook($plugin, $op);
-        sgClI::println('Done.', sgCLI::STYLE_INFO);
       }
     }
     else
