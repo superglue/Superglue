@@ -32,6 +32,11 @@ class sgContext
     return '/';
   }
   
+  public static function getEnvironment()
+  {
+    return self::$environment;
+  }
+  
   public static function getRelativeBaseUrl()
   {
     return str_replace('/index.php', '', $_SERVER['PHP_SELF']);

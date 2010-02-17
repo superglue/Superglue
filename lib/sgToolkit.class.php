@@ -2,6 +2,31 @@
 
 class sgToolkit
 {
+  public static function url($path, $absolute = false)
+  {
+    $env = sgContext::getEnvironment();
+    if (strpos($path, '/') === 0)
+    {
+      $path = substr($path, 1);
+    }
+    
+    if ($absolute)
+    {
+      $protocol = 'http';
+      if (isset($env['HTTPS']))
+      {
+        $protocol .= 's://';
+      }
+      else
+      {
+        $protocol .= '://';
+      }
+      return $protocol . $env['HTTP_HOST'] . sgContext::getRelativeBaseUrl() . '/' . $path;
+    }
+    
+    return sgContext::getRelativeBaseUrl() . '/' . $path;
+  }
+  
   //if object is an actual object, then the method will be called on that object
   //if it is a string, then method will be called statically
   public static function executeMethod($object, $method, $arguments = array())
@@ -111,6 +136,12 @@ class sgToolkit
   {
     symlink($source, $destination);
     sgCLI::printAction('+link', $destination);
+  }
+  
+  public static function touch($path, $time = null, $atime = null)
+  {
+    touch($path, $time, $atime);
+    sgCLI::printAction('+file', $path);
   }
   
   public static function getFiles($path, &$data = array())
