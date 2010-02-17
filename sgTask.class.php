@@ -5,9 +5,6 @@
 */
 abstract class sgTask
 {
-  /**
-   * format: array('namespace' => array('command' => 'description'));
-   */
   protected static $tasks = array();
   
   public function __construct()
@@ -47,6 +44,10 @@ abstract class sgTask
 
     if (isset($taskDefinition['options']) || isset($taskDefinition['arguments']))
     {
+      if (!isset($taskDefinition['arguments']))
+      {
+        $taskDefinition['arguments'] = array();
+      }
       if (!isset($taskDefinition['options']['short']))
       {
         $taskDefinition['options']['short'] = null;
@@ -59,11 +60,17 @@ abstract class sgTask
       try
       {
         $params = Console_Getopt::getopt($cliParams, $taskDefinition['options']['short'], $taskDefinition['options']['long']);
-        if ((isset($taskDefinition['arguments']) && !isset($params[1])) || (count($taskDefinition['arguments']) !== count($params[1])))
+        if (!empty($taskDefinition['arguments']) && (!isset($params[1]) || count($taskDefinition['arguments']) !== count($params[1])))
         {
           throw new Exception('Missing required argument.');
         }
-        $arguments = array_combine($taskDefinition['arguments'], $params[1]);
+        
+        $arguments = array();
+        if (!empty($taskDefinition['arguments']))
+        {
+          $arguments = array_combine($taskDefinition['arguments'], $params[1]);
+        }
+        
         $options = array();
         foreach ($params[0] as $param)
         {
