@@ -74,16 +74,25 @@ class sgBaseController
       '404' => 'HTTP/1.0 404 Not Found',
       '500' => 'HTTP/1.0 500 Internal Server Error',
     );
+    
+    /*
+      TODO figure out why I have this here
+    */
     if (!empty($header))
     {
       header($header);
+    }
+    
+    if (!isset($headers[(string)$httpErrorCode]))
+    {
+      header($error);
     }
     else
     {
       header($headers[(string)$httpErrorCode]);
     }
     
-    if (sgConfiguration::get('settings', 'debug'))
+    if (sgConfiguration::get('settings', 'debug') && is_object($error))
     {
       exit('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
     }
