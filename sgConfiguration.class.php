@@ -215,6 +215,41 @@ class sgConfiguration
     }
   }
   
+  private static function _executeGet($config, &$keys = null, &$currentConfig = null)
+  {
+    if (is_null($keys))
+    {
+      $keys = explode('.', $config);
+      $currentConfig = self::$config;
+    }
+    
+    $key = array_shift($keys);
+    
+    if (!empty($keys))
+    {
+      return self::_executeGet($config, $keys, $currentConfig[$key]);
+    }
+    
+    if (isset($currentConfig[$key]))
+    {
+      return $currentConfig[$key];
+    }
+    
+    return false;
+  }
+  
+  // $config is dot-notation string
+  // example: settings.cache_templates
+  public static function getPath($config, $default = false)
+  {
+    if ($value = self::_executeGet($config))
+    {
+      return $value;
+    }
+    
+    return $default;
+  }
+  
   public static function getRouting()
   {
     return self::get('routing');
