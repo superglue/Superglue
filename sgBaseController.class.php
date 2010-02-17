@@ -109,6 +109,7 @@ class sgBaseController
   */
   public function render($template = NULL)
   {
+    sgToolkit::executeMethod($this, 'preRender');
     try
     {
       if ($template)
