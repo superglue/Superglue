@@ -6,7 +6,12 @@ class sgUtilityTask extends sgTask
   {
     self::$tasks = array(
       'core' => array(
-        'help' => array('description' => 'Display all commands'),
+        'help' => array(
+          'description' => 'Display all commands',
+          'options' => array(
+            'long' => array('namespace=='),
+          ),
+        ),
         'clear-cache' => array(
           'description' => 'Clears all cache files',
           'aliases' => array('cc'),
@@ -17,10 +22,19 @@ class sgUtilityTask extends sgTask
     );
   }
   
-  protected function executeCoreHelp()
+  protected function executeCoreHelp($arguments, $options)
   {
-    $tasks = sgCLI::getInstance()->getTasks();
-    sgCLI::println('Available commands:', sgCLI::STYLE_HEADER);
+    if (isset($options['--namespace']))
+    {
+      $tasks = array($options['--namespace'] => sgCLI::getInstance()->getTasks($options['--namespace']));
+      sgCLI::println(sprintf('Available commands in "%s" namespace:', $options['--namespace']), sgCLI::STYLE_HEADER);
+    }
+    else
+    {
+      $tasks = sgCLI::getInstance()->getTasks();
+      sgCLI::println('Available commands:', sgCLI::STYLE_HEADER);
+    }
+    
     sgCLI::println();
     
     $max = 0;

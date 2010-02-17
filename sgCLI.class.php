@@ -106,8 +106,13 @@ class sgCLI
     return $params;
   }
   
-  public function getTasks()
+  public function getTasks($namespace = null)
   {
+    if ($namespace)
+    {
+      return $this->getInstance()->tasks[$namespace];
+    }
+    
     return $this->getInstance()->tasks;
   }
   
@@ -141,7 +146,10 @@ class sgCLI
       $task = $this->aliases[$namespace][$task];
       return self::executeTask($this->tasks[$namespace][$task]['class'], $namespace, $task, $cliParams);
     }
-    
+    else if (isset($this->tasks[$namespace]))
+    {
+      return self::executeTask($this->tasks['core']['help']['class'], 'core', 'help', array('core:help', '--namespace=' . $cliParams[0]));
+    }
     self::error('Task "' . $cliParams[0] . '" does not exist. Run "superglue help" to get a list of available tasks.');
     return false;
   }
