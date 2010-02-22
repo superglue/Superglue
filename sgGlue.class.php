@@ -64,6 +64,7 @@ class sgGlue {
         exit('<pre>Route "' . $route['name'] . '" is disabled.' . "\n</pre>");
       }
       $obj = new sgBaseController($matches);
+      sgContext::getInstance()->setController($obj);
       print $obj->throwErrorCode('404');
     }
     else
@@ -82,6 +83,7 @@ class sgGlue {
         if (class_exists($route['class']))
         {
           $obj = new $route['class']($matches);
+          sgContext::getInstance()->setController($obj);
           if (method_exists($obj, $method))
           {
             sgToolkit::executeMethod($obj, 'preExecute');
@@ -101,6 +103,7 @@ class sgGlue {
       else
       {
         $obj = new sgBaseController($matches);
+        sgContext::getInstance()->setController($obj);
         sgToolkit::executeMethod($obj, 'preExecute');
         print $obj->$method();
         sgToolkit::executeMethod($obj, 'postExecute');
@@ -124,7 +127,19 @@ class sgGlue {
   
   public static function stick($routes)
   {
-    $method = isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) : strtoupper($_SERVER['REQUEST_METHOD']);
+    if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']))
+    {
+      $method = strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
+    }
+    else if (isset($_REQUEST['_method']))
+    {
+      $method = strtoupper($_REQUEST['_method']);
+    }
+    else
+    {
+      $method = strtoupper($_SERVER['REQUEST_METHOD']);
+    }
+    
     if (!in_array($method, self::$allowedMethods))
     {
       throw new BadMethodCallException("Method, $method, not supported");

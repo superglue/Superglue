@@ -17,6 +17,9 @@ class sgBaseController
     $this->base = sgContext::getRelativeBaseUrl();
     $this->title = $this->guessTitle();
     $this->site_name = sgConfiguration::get('settings', 'site_name');
+    $this->scripts = array();
+    $this->styles = array();
+    $this->js_settings = array('base' => $this->base);
   }
   
   public function GET()
@@ -34,7 +37,18 @@ class sgBaseController
       'ajax' => sgContext::isAjaxRequest(),
       'vars' => array('GET' => $_GET, 'POST' => $_POST),
     );
-    
+    $templateVars['js_settings'] = json_encode($this->js_settings);
+    //str_replace() needed for incorrect slash escaping in php 5.2
+    $js_settings = str_replace('\/', '/', json_encode($this->js_settings));
+    $templateVars['js_settings'] =
+<<<END
+<script type="text/javascript" charset="utf-8">
+  <!--//--><![CDATA[//><!--
+    superglue = new Object();
+    superglue.settings = $js_settings;
+  //--><!]]>
+  </script>
+END;
     return $templateVars;
   }
   
@@ -118,6 +132,15 @@ class sgBaseController
   */
   public function render($template = NULL)
   {
+    $plugins = sgConfiguration::getInstance()->getPlugins();
+    foreach ($plugins as $plugin)
+    {
+      if (isset($plugin['configuration']))
+      {
+        sgToolkit::executeMethod($plugin['configuration'], 'preRender');
+      }
+    }
+    sgToolkit::executeMethod(sgConfiguration::getInstance(), 'preRender');
     sgToolkit::executeMethod($this, 'preRender');
     try
     {

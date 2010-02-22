@@ -7,6 +7,7 @@ class sgContext
   protected static $currentRoute;
   protected static $environment;
   protected static $rootDir;
+  protected $controller;
   
   private function __construct()
   {
@@ -60,6 +61,16 @@ class sgContext
   public static function getCurrentRoute()
   {
     return self::$currentRoute;
+  }
+  
+  public function setController($controller)
+  {
+    $this->controller = $controller;
+  }
+  
+  public function getController()
+  {
+    return $this->controller;
   }
   
   public static function isAjaxRequest()
