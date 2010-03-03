@@ -77,6 +77,7 @@ class sgUtilityTask extends sgTask
       sgToolkit::mkdir($targetDir . '/models', 0755);
       sgToolkit::mkdir($targetDir . '/controllers', 0755);
       sgToolkit::mkdir($targetDir . '/views', 0755);
+      sgToolkit::mkdir($targetDir . '/plugins', 0755);
       sgToolkit::mkdir($targetDir . '/web', 0755);
       sgToolkit::copy($scriptDir . '/skeleton/web/htaccess-dist', $targetDir . '/web/.htaccess');
       sgToolkit::copy($scriptDir . '/skeleton/web/index.php-dist', $targetDir . '/web/index.php');
