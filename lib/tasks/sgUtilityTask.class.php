@@ -86,7 +86,7 @@ class sgUtilityTask extends sgTask
       sgToolkit::copy($scriptDir . '/skeleton/views/index.html', $targetDir . '/views/index.html');
       if (sgToolkit::checkFileLocation($scriptDir, $targetDir))
       {
-        sgToolkit::symlink($this->relPath($scriptDir, $targetDir), $targetDir . '/superglue');
+        sgToolkit::symlink($this->relPath($scriptDir, $targetDir) . '/superglue', $targetDir . '/superglue');
       }
       else
       {
