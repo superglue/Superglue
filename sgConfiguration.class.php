@@ -152,11 +152,10 @@ class sgConfiguration
     
     foreach ($plugins as $plugin)
     {
-      $class = "{$plugin}Configuration";
-      if (method_exists($class, $hook))
+      if (isset($plugin['configuration']) && method_exists($plugin['configuration'], $hook))
       {
         //php 5.3 allows $class::init(), but I still want 5.2.x support
-        call_user_func(array($class, $hook));
+        call_user_func(array($plugin['configuration'], $hook));
       }
     }
   }
