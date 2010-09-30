@@ -18,12 +18,12 @@ class sgView
     $this->setPaths();
     $this->loader = new Twig_Loader_Filesystem($this->templatePaths);
     $this->twig = new Twig_Environment($this->loader, array(
-      'debug' => sgConfiguration::get('settings', 'debug'),
-      'cache' => sgConfiguration::get('settings', 'cache_dir') . '/templates',
-      'auto_reload' => !sgConfiguration::get('settings', 'cache_templates'),  // TODO maybe this should instead dictate the cache setting
+      'debug' => sgConfiguration::get('settings.debug'),
+      'cache' => sgConfiguration::get('settings.cache_dir') . '/templates',
+      'auto_reload' => !sgConfiguration::get('settings.cache_templates'),  // TODO maybe this should instead dictate the cache setting
     ));
     
-    foreach (sgConfiguration::get('settings', 'enabled_twig_extensions') as $extension)
+    foreach (sgConfiguration::get('settings.enabled_twig_extensions') as $extension)
     {
       $this->twig->addExtension(new $extension());
     }
@@ -56,7 +56,7 @@ class sgView
     if (!$overridePaths)
     {
       $this->templatePaths[] = sgConfiguration::getRootDir() . '/views';
-      $enabledPlugins = sgConfiguration::get('settings', 'enabled_plugins', array());
+      $enabledPlugins = sgConfiguration::get('settings.enabled_plugins', array());
       foreach ($enabledPlugins as $plugin)
       {
         if (is_dir(sgConfiguration::getRootDir() . "/plugins/$plugin/views"))

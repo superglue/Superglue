@@ -7,6 +7,7 @@ class sgContext
   protected static $currentRoute;
   protected static $environment;
   protected static $rootDir;
+  protected static $libDir;
   protected $controller;
   
   private function __construct()
@@ -51,6 +52,16 @@ class sgContext
   public static function getRootDir()
   {
     return self::$rootDir;
+  }
+  
+  public static function setLibDir($dir)
+  {
+    self::$libDir = $dir;
+  }
+  
+  public static function getLibDir()
+  {
+    return self::$libDir;
   }
   
   public static function setCurrentRoute($route)

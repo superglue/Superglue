@@ -53,7 +53,7 @@ class sgBaseComponent
     */
     catch(Exception $error)
     {
-      if (sgConfiguration::get('settings', 'debug'))
+      if (sgConfiguration::get('settings.debug'))
       {
         return('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
       }

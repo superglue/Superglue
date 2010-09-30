@@ -43,7 +43,7 @@ class sgGlue {
     if (!is_null(self::$cachedRoutes)) {
       return self::$cachedRoutes;
     }
-    $cacheFile = sgConfiguration::get('settings', 'cache_dir') . '/sgRouteCache.cache';
+    $cacheFile = sgConfiguration::get('settings.cache_dir') . '/sgRouteCache.cache';
     if (is_file($cacheFile) && $contents = file_get_contents($cacheFile))
     {
       self::$cachedRoutes = unserialize($contents);
@@ -59,7 +59,7 @@ class sgGlue {
     sgContext::setCurrentRoute($route);
     if (isset($route['disabled']) && $route['disabled'] == true)
     {
-      if (sgConfiguration::get('settings', 'debug'))
+      if (sgConfiguration::get('settings.debug'))
       {
         exit('<pre>Route "' . $route['name'] . '" is disabled.' . "\n</pre>");
       }
@@ -122,7 +122,7 @@ class sgGlue {
   public static function saveCachedRoutes()
   {
     $data = serialize(self::$cachedRoutes);
-    file_put_contents(sgConfiguration::get('settings', 'cache_dir') . '/sgRouteCache.cache', $data);
+    file_put_contents(sgConfiguration::get('settings.cache_dir') . '/sgRouteCache.cache', $data);
   }
   
   public static function stick($routes)
@@ -148,7 +148,7 @@ class sgGlue {
     $path = sgContext::getCurrentPath();
     $matchedRoute = null;
     
-    if (sgConfiguration::get('settings', 'cache_routes'))
+    if (sgConfiguration::get('settings.cache_routes'))
     {
       $matchedRoute = self::checkRouteCache($path, $method);
     }
@@ -174,7 +174,7 @@ class sgGlue {
     
     if (!$matchedRoute)
     {
-      if (sgConfiguration::get('settings', 'magic_routing'))
+      if (sgConfiguration::get('settings.magic_routing'))
       {
         $matchedRoute = array(
           'path' => $path,
@@ -193,7 +193,7 @@ class sgGlue {
     
     if ($matchedRoute)
     {
-      if (!sgConfiguration::get('settings', 'magic_routing') && $matchedRoute['class'] == 'sgMagicController')
+      if (!sgConfiguration::get('settings.magic_routing') && $matchedRoute['class'] == 'sgMagicController')
       {
         $obj = new sgBaseController($matchedRoute['matches']);
         print $obj->throwErrorCode('404');
@@ -210,7 +210,7 @@ class sgGlue {
   
   public static function shutdown()
   {
-    if (sgConfiguration::get('settings', 'cache_routes'))
+    if (sgConfiguration::get('settings.cache_routes'))
     {
       self::saveCachedRoutes();
     }

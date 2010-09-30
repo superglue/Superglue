@@ -16,7 +16,7 @@ class sgBaseController
     $this->matchedRoute = sgContext::getCurrentRoute();
     $this->base = sgContext::getRelativeBaseUrl();
     $this->title = $this->guessTitle();
-    $this->site_name = sgConfiguration::get('settings', 'site_name');
+    $this->site_name = sgConfiguration::get('settings.site_name');
     $this->scripts = array();
     $this->styles = array();
     $this->js_settings = array('base' => $this->base);
@@ -106,7 +106,7 @@ END;
       header($headers[(string)$httpErrorCode]);
     }
     
-    if (sgConfiguration::get('settings', 'debug') && is_object($error))
+    if (sgConfiguration::get('settings.debug') && is_object($error))
     {
       exit('<pre>' . $error->getMessage() . "\n" . $error->getTraceAsString() . '</pre>');
     }
@@ -163,7 +163,7 @@ END;
     }
 
     // update route cache with appropriate template
-    if (sgConfiguration::get('settings', 'cache_routes'))
+    if (sgConfiguration::get('settings.cache_routes'))
     {
       $method = strtoupper($_SERVER['REQUEST_METHOD']);
       $path = sgContext::getCurrentPath();

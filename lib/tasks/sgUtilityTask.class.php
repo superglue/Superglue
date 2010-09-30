@@ -61,7 +61,7 @@ class sgUtilityTask extends sgTask
   public function executeCoreInitProject($arguments, $options)
   {
     $targetDir = realpath($_SERVER['PWD']);
-    $scriptDir = realpath(dirname(__FILE__) . '/../../');
+    $scriptDir = sgContext::getLibDir();
     if (file_exists($targetDir . '/superglue'))
     {
       sgCLI::error('A project already exists in this directory.');

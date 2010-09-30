@@ -16,9 +16,10 @@ class sgConfiguration
   private function __construct()
   {
     sgContext::getInstance()->setRootDir(self::getRootDir());
+    sgContext::getInstance()->setLibDir(self::getLibDir());
     
     self::loadConfig('settings', dirname(__FILE__) . '/config/config.php');
-    self::_initPlugins(dirname(__FILE__), self::get('settings', 'enabled_plugins'));   //init core plugins
+    self::_initPlugins(dirname(__FILE__), self::get('settings.enabled_plugins'));   //init core plugins
     $projectConfig = null;
     if (file_exists(realpath(sgContext::getInstance()->getRootDir() . '/config/config.php')))
     {
@@ -59,12 +60,25 @@ class sgConfiguration
     }
     return realpath(dirname($r->getFileName()) . '/..');
   }
+  
+  public static function getLibDir()
+  {
+    try
+    {
+      $r = new ReflectionClass('sgConfiguration');
+    }
+    catch (Exception $e)
+    {
+      return false;
+    }
+    return realpath(dirname($r->getFileName()));
+  }
 
   private static function _initAutoloader()
   {
     if (!sgAutoloader::checkCache())
     {
-      $paths = array(dirname(__FILE__) . '/../');
+      $paths = array(sgContext::getLibDir());
       foreach (self::$enabledPlugins as $plugin)
       {
         $paths[] = sgContext::getRootDir() . "/plugins/$plugin/";
@@ -74,7 +88,7 @@ class sgConfiguration
       $paths[] = sgContext::getRootDir() . '/controllers/';
       $paths[] = sgContext::getRootDir() . '/models/';
       
-      sgAutoloader::setExclusions(self::get('settings', 'autoload_exclusions', array()));
+      sgAutoloader::setExclusions(self::get('settings.autoload_exclusions', array()));
       sgAutoloader::loadPaths($paths);
     }
     Twig_Autoloader::register();
@@ -204,16 +218,6 @@ class sgConfiguration
     self::$config[$configType][$setting] = $value;
   }
   
-  public static function get($configType, $setting = null, $default = null)
-  {
-    if ($setting) {
-      return isset(self::$config[$configType][$setting]) ? self::$config[$configType][$setting] : $default;
-    }
-    else {
-      return self::$config[$configType];
-    }
-  }
-  
   private static function _executeGet($config, &$keys = null, &$currentConfig = null)
   {
     if (is_null($keys))
@@ -239,7 +243,7 @@ class sgConfiguration
   
   // $config is dot-notation string
   // example: settings.cache_templates
-  public static function getPath($config, $default = false)
+  public static function get($config, $default = false)
   {
     if ($value = self::_executeGet($config))
     {

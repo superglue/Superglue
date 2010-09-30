@@ -80,9 +80,9 @@ class sgAutoloader
   
   public static function checkCache()
   {
-    if (sgConfiguration::get('settings', 'cache_autoload'))
+    if (sgConfiguration::get('settings.cache_autoload'))
     {
-      $cacheFile = sgConfiguration::get('settings', 'cache_dir') . '/sgAutoloadCache.cache';
+      $cacheFile = sgConfiguration::get('settings.cache_dir') . '/sgAutoloadCache.cache';
       if (file_exists($cacheFile))
       {
         self::$isCached = true;
@@ -108,9 +108,9 @@ class sgAutoloader
   
   public static function shutdown()
   {
-    if (sgConfiguration::get('settings', 'cache_autoload'))
+    if (sgConfiguration::get('settings.cache_autoload'))
     {
-      $cacheFile = sgConfiguration::get('settings', 'cache_dir') . '/sgAutoloadCache.cache';
+      $cacheFile = sgConfiguration::get('settings.cache_dir') . '/sgAutoloadCache.cache';
       if (!file_exists($cacheFile))
       {
         $data = serialize(self::$_cache);
