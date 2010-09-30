@@ -43,8 +43,9 @@ class sgPluginTask extends sgTask
   private function pluginOp($pluginName, $op, $actionString)
   {
     $plugins = sgConfiguration::getPlugins();
-    if ($plugin = $plugins[$pluginName])
+    if (isset($plugins[$pluginName]))
     {
+      $plugin = $plugins[$pluginName];
       if (isset($plugin->configuration) && is_object($plugin->configuration) && method_exists($plugin->configuration, $op))
       {
         $opString = sgCLI::formatText($op, array('options' => array('bright', 'underscore')), sgCLI::STYLE_CONFIRM, false);
