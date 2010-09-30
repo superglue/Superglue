@@ -81,7 +81,7 @@ class sgConfiguration
       $paths = array(sgContext::getLibDir());
       foreach (self::$enabledPlugins as $plugin)
       {
-        $paths[] = sgContext::getRootDir() . "/plugins/$plugin/";
+        $paths[] = sgContext::getRootDir() . '/plugins/' . $plugin->name . '/';
       }
       $paths[] = sgContext::getRootDir() . '/config/';
       $paths[] = sgContext::getRootDir() . '/lib/';
@@ -157,53 +157,58 @@ class sgConfiguration
     return self::$enabledPlugins;
   }
   
+  public static function getPlugin($pluginName)
+  {
+    return self::$enabledPlugins[$pluginName];
+  }
+  
   public static function executePluginHook($plugins, $hook)
   {
     if (!is_array($plugins))
     {
       $plugins = array($plugins);
     }
-    
+
     foreach ($plugins as $plugin)
     {
-      if (isset($plugin['configuration']) && method_exists($plugin['configuration'], $hook))
+      if (isset($plugin->configuration) && method_exists($plugin->configuration, $hook))
       {
         //php 5.3 allows $class::init(), but I still want 5.2.x support
-        call_user_func(array($plugin['configuration'], $hook));
+        call_user_func(array($plugin->configuration, $hook));
       }
     }
   }
   
   /*
-    TODO This method is terrible. Figure out a better way to handle it!
+    TODO Still not in love with the way this works, but it's getting better
   */
   private static function _initPlugins($dir, array $plugins)
   {
-    $names = $plugins;
-    //self::$enabledPlugins = array_unique(array_merge(self::$enabledPlugins, $plugins));
-    array_walk($plugins, create_function('&$plugin, $key, $dir', '$plugin = array("name" => $plugin, "path" => "$dir/plugins/$plugin");'), $dir);
-    $plugins = array_combine($names, $plugins);
-    self::$enabledPlugins = array_merge(self::$enabledPlugins, $plugins);
-    
-    foreach ($plugins as $name => $plugin)
+    foreach ($plugins as $pluginName)
     {
-      sgAutoloader::loadPaths(array($plugin['path']));
-      $class = "{$name}Configuration";
+      $plugin = new StdClass();
+      $plugin->name = $pluginName;
+      $plugin->path = "$dir/plugins/$pluginName";
+      
+      sgAutoloader::loadPaths(array($plugin->path));
+      $class = $plugin->name . "Configuration";
       
       if (class_exists($class))
       {
         $configuration = new $class();
         sgToolkit::executeMethod($configuration, 'preConfig');
-        self::$enabledPlugins[$name]['configuration'] = $configuration;
+        $plugin->configuration = $configuration;
       }
       
-      self::loadConfig('settings', "{$plugin['path']}/config/config.php", true);
-      self::loadConfig('routing', "{$plugin['path']}/config/routing.php", true);
+      self::loadConfig('settings', "{$plugin->path}/config/config.php", true);
+      self::loadConfig('routing', "{$plugin->path}/config/routing.php", true);
       
       if (isset($configuration))
       {
         sgToolkit::executeMethod($configuration, 'postConfig');
       }
+      
+      self::$enabledPlugins[$plugin->name] = $plugin;
     }
   }
   
