@@ -135,9 +135,9 @@ END;
     $plugins = sgConfiguration::getInstance()->getPlugins();
     foreach ($plugins as $plugin)
     {
-      if (isset($plugin['configuration']))
+      if (isset($plugin->configuration))
       {
-        sgToolkit::executeMethod($plugin['configuration'], 'preRender');
+        sgToolkit::executeMethod($plugin->configuration, 'preRender');
       }
     }
     sgToolkit::executeMethod(sgConfiguration::getInstance(), 'preRender');
