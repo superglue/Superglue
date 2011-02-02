@@ -31,6 +31,7 @@ class sgBaseController
   {
     $templateVars = get_object_vars($this);
     $templateVars['context'] = sgContext::getInstance();
+    $templateVars['configuration'] = sgConfiguration::getInstance();
     $templateVars['request'] = array(
       'uri' => $_SERVER['REQUEST_URI'],
       'method' => $_SERVER['REQUEST_METHOD'],
