@@ -8,11 +8,15 @@ return array(
   'cache_autoload' => false,
   'cache_dir' => sgConfiguration::getRootDir() . '/cache',
   'autoload_exclusions' => array(
-    'Twig', 
-    '.svn', 
-    'CVS', 
+    'Twig',
+    '.svn',
+    'CVS',
+    '.git',
     dirname(__FILE__) . '/../skeleton', 
     dirname(__FILE__) . '/../config'
   ),
   'enabled_plugins' => array('Components'),
+  'js_settings' => array(
+    'base' => sgContext::getRelativeBaseUrl(),
+  ),
 );

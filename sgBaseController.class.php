@@ -19,7 +19,7 @@ class sgBaseController
     $this->site_name = sgConfiguration::get('settings.site_name');
     $this->scripts = array();
     $this->styles = array();
-    $this->js_settings = array('base' => $this->base);
+    $this->js_settings = sgConfiguration::get('settings.js_settings');
   }
   
   public function GET()
