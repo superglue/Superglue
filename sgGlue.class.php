@@ -72,9 +72,9 @@ class sgGlue {
       $plugins = sgConfiguration::getInstance()->getPlugins();
       foreach ($plugins as $plugin)
       {
-        if (isset($plugin['configuration']))
+        if (isset($plugin->configuration))
         {
-          sgToolkit::executeMethod($plugin['configuration'], 'preExecute');
+          sgToolkit::executeMethod($plugin->configuration, 'preExecute');
         }
       }
       sgToolkit::executeMethod(sgConfiguration::getInstance(), 'preExecute');
@@ -111,9 +111,9 @@ class sgGlue {
       sgToolkit::executeMethod(sgConfiguration::getInstance(), 'postExecute');
       foreach ($plugins as $plugin)
       {
-        if (isset($plugin['configuration']))
+        if (isset($plugin->configuration))
         {
-          sgToolkit::executeMethod($plugin['configuration'], 'postExecute');
+          sgToolkit::executeMethod($plugin->configuration, 'postExecute');
         }
       }
     }
