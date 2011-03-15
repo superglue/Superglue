@@ -168,7 +168,7 @@ END;
     {
       $method = strtoupper($_SERVER['REQUEST_METHOD']);
       $path = sgContext::getCurrentPath();
-      sgGlue::$cachedRoutes["$method $path"]['template'] = str_replace('.html', '', $this->view->getView()->getName());
+      sgGlue::$cachedRoutes["$method $path"]['template'] = str_replace('.html', '', sgView::getInstance()->getView()->getName());
     }
     
     return sgView::getInstance()->render($this->getTemplateVars());
